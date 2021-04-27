@@ -1,0 +1,252 @@
+{
+    "token": {
+        "expires_at": "2021-03-19T11:05:58.257000Z",
+        "methods": [
+            "password"
+        ],
+        "catalog": [
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "b17535df50f74e99b17501e19d1dbd46",
+                        "region": "sa-fb-1",
+                        "interface": "public",
+                        "url": "https://bms.sa-fb-1.chengtou.com/v2/caa3abc5e21f44a98b6ab9b07865b3a2"
+                    }
+                ],
+                "name": "bmsv2",
+                "id": "74534cf1468041f1b98700d2878c794f",
+                "type": "baremetalv2"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "f81f0e9e24c64efd846497d1ff257f6a",
+                        "region": "sa-fb-1",
+                        "interface": "internal",
+                        "url": "https://volume.az0.dc0.chengtou.com:443/v2/caa3abc5e21f44a98b6ab9b07865b3a2"
+                    }
+                ],
+                "name": "cinder",
+                "id": "7580e001bda04d3c9bd941169c27ba8a",
+                "type": "volume"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "98fdc767375842969a7cf345177a2825",
+                        "region": "sa-fb-1",
+                        "interface": "internal",
+                        "url": "https://compute.az0.dc0.chengtou.com:443/v2.1/caa3abc5e21f44a98b6ab9b07865b3a2"
+                    }
+                ],
+                "name": "nova",
+                "id": "3cb2ac20da9142dc9357ea4d1abe7fa0",
+                "type": "compute"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "f1833d6f2a204b32b6e3ac4c08c6bc2e",
+                        "region": "sa-fb-1",
+                        "interface": "public",
+                        "url": "https://vpc.sa-fb-1.chengtou.com"
+                    }
+                ],
+                "name": "vpc",
+                "id": "7cd54fa3ff3b43e98a1047d81b1f2c2b",
+                "type": "network"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "b1a2af6eafc94049a72c699bffc515b3",
+                        "region": "sa-fb-1",
+                        "interface": "public",
+                        "url": "https://ccs.sa-fb-1.chengtou.com/v1.0"
+                    }
+                ],
+                "name": "ccs",
+                "id": "45fce77af46943c1a3b87f5c567e37e0",
+                "type": "ccs"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "0028047843b945738a5d4b1d770891cb",
+                        "region": "sa-fb-1",
+                        "interface": "public",
+                        "url": "https://iam-apigateway-proxy.chengtou.com/v3"
+                    },
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "415b57e95a4e4acfb98d4f1169a4fe7f",
+                        "region": "sa-fb-1",
+                        "interface": "internal",
+                        "url": "https://identity.az0.dc0.chengtou.com:443/identity/v3"
+                    }
+                ],
+                "name": "keystone",
+                "id": "0509262c6352434e8de8bc8c381290d9",
+                "type": "identity"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "578eccc695b74774b649bbc74a2adb2d",
+                        "region": "sa-fb-1",
+                        "interface": "public",
+                        "url": "https://evs.sa-fb-1.chengtou.com/v2/caa3abc5e21f44a98b6ab9b07865b3a2"
+                    }
+                ],
+                "name": "evsv2",
+                "id": "1d3fa2e82d4a4c69a5f545139cdade0d",
+                "type": "volumev2"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "29c08fca94474fa89888dcd35b1c6093",
+                        "region": "sa-fb-1",
+                        "interface": "public",
+                        "url": "https://10.230.8.2:643"
+                    }
+                ],
+                "name": "om",
+                "id": "81bed77638654915a3289b7b91a245a9",
+                "type": "om"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "cc2b0f5c0afd4a05882ef62171a1fe2b",
+                        "region": "sa-fb-1",
+                        "interface": "internal",
+                        "url": "https://network.az0.dc0.chengtou.com:443"
+                    }
+                ],
+                "name": "neutron",
+                "id": "d49fa3266367420bb8f1c2bee4bf5b63",
+                "type": "network"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "5904e3d1d0494d70a0b7ae9247bd4782",
+                        "region": "sa-fb-1",
+                        "interface": "internal",
+                        "url": "https://cps.az0.dc0.chengtou.com:443"
+                    }
+                ],
+                "name": "cps",
+                "id": "30171484bce2473ea1e38597dd487558",
+                "type": "cps"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "97877c4c46cb45559ae9262b15998dba",
+                        "region": "sa-fb-1",
+                        "interface": "public",
+                        "url": "https://ims.sa-fb-1.chengtou.com"
+                    }
+                ],
+                "name": "ims",
+                "id": "6e923d7cb68b4d65b2082853389c8193",
+                "type": "image"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "854d6ea5aaec4776a531ab6ab09dedbc",
+                        "region": "sa-fb-1",
+                        "interface": "public",
+                        "url": "https://evs.sa-fb-1.chengtou.com/v2/caa3abc5e21f44a98b6ab9b07865b3a2"
+                    }
+                ],
+                "name": "evs",
+                "id": "5ebacf4163f5465e9ae34df37b70bae4",
+                "type": "volume"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "e183e597cec74d7db8ac246da7624e22",
+                        "region": "sa-fb-1",
+                        "interface": "public",
+                        "url": "https://bms.sa-fb-1.chengtou.com/v1/caa3abc5e21f44a98b6ab9b07865b3a2"
+                    }
+                ],
+                "name": "bms",
+                "id": "5627d1eb33bc486b80626a5be0e6d8d2",
+                "type": "baremetal"
+            },
+            {
+                "endpoints": [
+                    {
+                        "region_id": "sa-fb-1",
+                        "id": "2969968242a04338b2de8f1c403c54e9",
+                        "region": "sa-fb-1",
+                        "interface": "public",
+                        "url": "https://ecs.sa-fb-1.chengtou.com/v2/caa3abc5e21f44a98b6ab9b07865b3a2"
+                    }
+                ],
+                "name": "ecs",
+                "id": "06bbd8d288a5434b8840afb1984f713c",
+                "type": "compute"
+            }
+        ],
+        "roles": [
+            {
+                "name": "vdc_owner",
+                "id": "e6c41a0254f945c0a2fa87e3a010128c"
+            },
+            {
+                "name": "approv_adm",
+                "id": "109dc38ad0e146f79c6079156c90534a"
+            },
+            {
+                "name": "tag_adm",
+                "id": "4a31e63cb22a4c7e86b3a2913b20523e"
+            },
+            {
+                "name": "te_admin",
+                "id": "22e8e041fd1241a997c3fd4f2538b0ed"
+            },
+            {
+                "name": "vdc_adm",
+                "id": "d5b3bd1ee2f14263906da96ad11f18e0"
+            }
+        ],
+        "project": {
+            "domain": {
+                "name": "vdc_CW",
+                "id": "d459d60b990f4ff7b555918ee2b42943"
+            },
+            "name": "财务",
+            "id": "caa3abc5e21f44a98b6ab9b07865b3a2"
+        },
+        "issued_at": "2021-03-18T11:05:58.257000Z",
+        "user": {
+            "domain": {
+                "name": "vdc_CW",
+                "id": "d459d60b990f4ff7b555918ee2b42943"
+            },
+            "name": "yg_cwadmin",
+            "id": "a786861df0fe496bbca10513ac4dba25"
+        }
+    }
+}

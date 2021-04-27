@@ -1,0 +1,410 @@
+{
+    "type": "object",
+    "properties": {
+        "event_source": {
+            "id": "event_source",
+            "align": "leftRight",
+            "type": "string",
+            "widget": {
+                "id": "radios"
+            },
+            "inputClass": "",
+            "index": 0,
+            "title": "事件来源",
+            "selectDatas": [
+                {
+                    "id": "集中监控",
+                    "name": "集中监控"
+                },
+                {
+                    "id": "服务请求",
+                    "name": "服务请求"
+                },
+                {
+                    "id": "信息安全",
+                    "name": "信息安全"
+                },
+                {
+                    "id": "投诉建议",
+                    "name": "投诉建议"
+                }
+            ],
+            "required": true,
+            "options": []
+        },
+        "event_area": {
+            "id": "event_area",
+            "type": "string",
+            "widget": {
+                "id": "string"
+            },
+            "inputClass": "",
+            "index": 1,
+            "title": "事件区域",
+            "required": true
+        },
+        "event_impact": {
+            "id": "event_impact",
+            "align": "leftRight",
+            "type": "string",
+            "widget": {
+                "id": "radios"
+            },
+            "inputClass": "",
+            "index": 2,
+            "title": "事件影响度",
+            "selectDatas": [
+                {
+                    "id": "特大",
+                    "name": "特大"
+                },
+                {
+                    "id": "大",
+                    "name": "大"
+                },
+                {
+                    "id": "中",
+                    "name": "中"
+                },
+                {
+                    "id": "小",
+                    "name": "小"
+                }
+            ],
+            "required": true,
+            "options": []
+        },
+        "incident_severity": {
+            "id": "incident_severity",
+            "align": "leftRight",
+            "type": "string",
+            "widget": {
+                "id": "radios"
+            },
+            "inputClass": "",
+            "index": 3,
+            "title": "事件严重性",
+            "selectDatas": [
+                {
+                    "id": "致命的",
+                    "name": "致命的"
+                },
+                {
+                    "id": "严重的",
+                    "name": "严重的"
+                },
+                {
+                    "id": "一般的",
+                    "name": "一般的"
+                },
+                {
+                    "id": "无影响",
+                    "name": "无影响"
+                }
+            ],
+            "required": true,
+            "options": []
+        },
+        "processing_priority": {
+            "id": "processing_priority",
+            "align": "leftRight",
+            "type": "string",
+            "widget": {
+                "id": "radios"
+            },
+            "inputClass": "",
+            "index": 4,
+            "title": "处理优先级",
+            "selectDatas": [
+                {
+                    "id": "特级",
+                    "name": "特级"
+                },
+                {
+                    "id": "高",
+                    "name": "高"
+                },
+                {
+                    "id": "中",
+                    "name": "中"
+                },
+                {
+                    "id": "低",
+                    "name": "低"
+                }
+            ],
+            "required": true,
+            "options": []
+        },
+        "event_level": {
+            "id": "event_level",
+            "type": "string",
+            "widget": {
+                "id": "select"
+            },
+            "inputClass": "",
+            "index": 5,
+            "title": "事件级别",
+            "selectDatas": [
+                {
+                    "id": "特别重大（一级）",
+                    "name": "特别重大（一级）"
+                },
+                {
+                    "id": "严重故障（二级）",
+                    "name": "严重故障（二级）"
+                },
+                {
+                    "id": "一般故障（三级）",
+                    "name": "一般故障（三级）"
+                },
+                {
+                    "id": "一般申告（四级）",
+                    "name": "一般申告（四级）"
+                }
+            ],
+            "required": true
+        },
+        "event_type": {
+            "id": "event_type",
+            "type": "string",
+            "widget": {
+                "id": "select"
+            },
+            "inputClass": "",
+            "index": 0,
+            "title": "事件分类",
+            "placeholder": "请选择事件类别",
+            "defaultValue": "basic",
+            "selectDatas": [
+                {
+                    "id": "service",
+                    "name": "服务请求"
+                },
+                {
+                    "id": "basic",
+                    "name": "故障处理"
+                },
+                {
+                    "id": "infomation",
+                    "name": "信息安全"
+                }
+            ]
+        },
+        "malfunction": {
+            "id": "malfunction",
+            "type": "string",
+            "widget": {
+                "id": "select"
+            },
+            "inputClass": "",
+            "index": 1,
+            "title": "故障处理",
+            "placeholder": "请选择故障类型",
+            "selectDatas": [
+                {
+                    "id": "equipment",
+                    "name": "硬件设备故障"
+                },
+                {
+                    "id": "software",
+                    "name": "系统软件故障"
+                }
+            ],
+            "defaultValue": "equipment",
+            "condition": "model.event_type === 'basic'",
+            "visibleIf": {
+                "event_type": [
+                    "basic"
+                ]
+            }
+        },
+        "equipment_malfunction_type": {
+            "id": "equipment_malfunction_type",
+            "align": "leftRight",
+            "type": "string",
+            "widget": {
+                "id": "radios"
+            },
+            "inputClass": "",
+            "index": 2,
+            "title": "硬件设备故障类型",
+            "selectDatas": [
+                {
+                    "id": "micro_module",
+                    "name": "X86 设备故障"
+                },
+                {
+                    "id": "hvac",
+                    "name": "存储设备故障"
+                },
+                {
+                    "id": "ecm",
+                    "name": "网络设备故障"
+                },
+                {
+                    "id": "hvac",
+                    "name": "安全设备故障"
+                }
+            ],
+            "condition": "model.malfunction === 'equipment'",
+            "visibleIf": {
+                "malfunction": [
+                    "equipment"
+                ]
+            },
+            "options": []
+        },
+        "software_malfunction_type": {
+            "id": "software_malfunction_type",
+            "align": "leftRight",
+            "type": "string",
+            "widget": {
+                "id": "radios"
+            },
+            "inputClass": "",
+            "index": 3,
+            "title": "系统软件故障类型",
+            "selectDatas": [
+                {
+                    "id": "su",
+                    "name": "云平台软件故障"
+                },
+                {
+                    "id": "cctv",
+                    "name": "安全软件故障"
+                }
+            ],
+            "condition": "model.malfunction === 'software'",
+            "visibleIf": {
+                "malfunction": [
+                    "software"
+                ]
+            },
+            "options": []
+        },
+        "security_type": {
+            "id": "security_type",
+            "align": "leftRight",
+            "type": "string",
+            "widget": {
+                "id": "radios"
+            },
+            "inputClass": "",
+            "index": 4,
+            "title": "安全问题类型",
+            "selectDatas": [
+                {
+                    "id": "0",
+                    "name": "漏洞风险"
+                },
+                {
+                    "id": "1",
+                    "name": "僵尸网络"
+                },
+                {
+                    "id": "2",
+                    "name": "IPS 入侵"
+                },
+                {
+                    "id": "3",
+                    "name": "病毒攻击"
+                },
+                {
+                    "id": "4",
+                    "name": "DDOS 攻击"
+                },
+                {
+                    "id": "5",
+                    "name": "SQL 注入攻击"
+                },
+                {
+                    "id": "6",
+                    "name": "网页篡改"
+                },
+                {
+                    "id": "7",
+                    "name": "访问威胁"
+                }
+            ],
+            "conditional": {
+                "when": "event_type",
+                "eq": "infomation"
+            },
+            "condition": "model.event_type === 'infomation'",
+            "visibleIf": {
+                "event_type": [
+                    "infomation"
+                ]
+            },
+            "options": []
+        },
+        "info_search": {
+            "id": "info_search",
+            "align": "leftRight",
+            "type": "string",
+            "widget": {
+                "id": "radios"
+            },
+            "inputClass": "",
+            "index": 5,
+            "title": "安全问题类型",
+            "selectDatas": [
+                {
+                    "id": "0",
+                    "name": "查询网络与安全信息"
+                },
+                {
+                    "id": "1",
+                    "name": "查询服务器与存储信息"
+                }
+            ],
+            "conditional": {
+                "when": "event_type",
+                "eq": "service"
+            },
+            "condition": "model.event_type === 'service'",
+            "visibleIf": {
+                "event_type": [
+                    "service"
+                ]
+            },
+            "options": []
+        },
+        "schemaFormValid": {
+            "hidden": true,
+            "type": "boolean",
+            "default": false,
+            "condition": "1 === 2",
+            "widget": {
+                "id": "hidden"
+            }
+        }
+    },
+    "fieldsets": [
+        {
+            "id": "fieldset-default",
+            "title": "",
+            "description": "",
+            "name": "",
+            "fields": [
+                "event_source",
+                "event_area",
+                "event_impact",
+                "incident_severity",
+                "processing_priority",
+                "event_level",
+                "event_type",
+                "malfunction",
+                "equipment_malfunction_type",
+                "software_malfunction_type",
+                "security_type",
+                "info_search",
+                "schemaFormValid"
+            ]
+        }
+    ],
+    "widget": {
+        "id": "object"
+    }
+}

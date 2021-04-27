@@ -1,0 +1,53 @@
+{
+  "type": "object",
+  "properties": {
+      "tongbaoduixiang": {
+          "id": "tongbaoduixiang",
+          "type": "string",
+          "config": {
+            "value": {
+                "source": "api",
+                "method": "get",
+                "expression": "/busness-groups/${busnessGroupId}/list_users"
+                
+            }
+        },
+          "widget": {
+              "id": "select"
+          },
+          "inputClass": "",
+          "index": 0,
+          "title": "通报对象",
+          "selectDatas": [
+              {
+                  "id": "",
+                  "name": ""
+              }
+          ]
+      },
+      "schemaFormValid": {
+          "hidden": true,
+          "type": "boolean",
+          "default": true,
+          "condition": "1 === 2",
+          "widget": {
+              "id": "hidden"
+          }
+      }
+  },
+  "fieldsets": [
+      {
+          "id": "fieldset-default",
+          "title": "",
+          "description": "",
+          "name": "",
+          "fields": [
+              "tongbaoduixiang",
+              "schemaFormValid"
+          ]
+      }
+  ],
+  "widget": {
+      "id": "object"
+  }
+}

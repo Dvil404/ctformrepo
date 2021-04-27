@@ -1,0 +1,51 @@
+{
+    "type": "object",
+    "properties": {
+        "fankui": {
+            "id": "fankui",
+            "align": "leftRight",
+            "type": "string",
+            "widget": {
+                "id": "radios"
+            },
+            "inputClass": "",
+            "index": 0,
+            "title": "反馈信息",
+            "selectDatas": [
+                {
+                    "id": "满意",
+                    "name": "满意"
+                },
+                {
+                    "id": "不满意",
+                    "name": "不满意"
+                }
+            ],
+            "options": []
+        },
+        "schemaFormValid": {
+            "hidden": true,
+            "type": "boolean",
+            "default": false,
+            "condition": "1 === 2",
+            "widget": {
+                "id": "hidden"
+            }
+        }
+    },
+    "fieldsets": [
+        {
+            "id": "fieldset-default",
+            "title": "",
+            "description": "",
+            "name": "",
+            "fields": [
+                "fankui",
+                "schemaFormValid"
+            ]
+        }
+    ],
+    "widget": {
+        "id": "object"
+    }
+}

@@ -1,0 +1,62 @@
+[
+    {
+      "group": "城投水务",
+      "sys_name": "新装业务系统2.0",
+      "vm": 5,
+      "series": 1
+    },
+    {
+      "group": "城投水务",
+      "sys_name": "集团网站",
+      "vm": 5,
+      "series": 1
+    },
+    {
+      "group": "城投水务",
+      "sys_name": "一屏观城投",
+      "vm": 5,
+      "series": 1
+    },
+    {
+      "group": "城投水务",
+      "sys_name": "集中接收平台（二期）",
+      "vm": 5,
+      "series": 1
+    },
+    {
+      "group": "城投水务",
+      "sys_name": "水务档案系统",
+      "vm": 5,
+      "series": 1
+    },
+    {
+      "group": "城投水务",
+      "sys_name": "进博会保障",
+      "vm": 5,
+      "series": 1
+    },
+    {
+      "group": "城投水务",
+      "sys_name": "人力资源",
+      "vm": 5,
+      "series": 1
+    },
+    {
+      "group": "城投水务",
+      "sys_name": "微客服系统",
+      "vm": 5,
+      "series": 1
+    },
+    {
+      "group": "城投水务",
+      "sys_name": "企业技术标准查询平台",
+      "vm": 5,
+      "series": 1
+    },
+    {
+      "group": "城投水务",
+      "sys_name": "党务公开",
+      "vm": 5,
+      "series": 1
+    }
+  ]

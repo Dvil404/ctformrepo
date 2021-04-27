@@ -1,0 +1,38 @@
+[
+  {
+    "error_time": "2021-03-01-16:00",
+    "error_host": "host01",
+    "error_info": "DHCP服务不可用",
+    "type": "故障"
+  },
+  {
+    "error_time": "2021-03-01-16:00",
+    "error_host": "host02",
+    "error_info": "ICMP服务不可用",
+    "type": "故障"
+  },
+  {
+    "error_time": "2021-03-01-16:00",
+    "error_host": "host03",
+    "error_info": "链路断开",
+    "type": "故障"
+  },
+  {
+    "error_time": "2021-03-01-16:00",
+    "error_host": "host01",
+    "error_info": "连接超时",
+    "type": "故障"
+  },
+  {
+    "error_time": "2021-03-01-16:00",
+    "error_host": "host01",
+    "error_info": "CPU占用过高",
+    "type": "故障"
+  },
+  {
+    "error_time": "2021-03-01-16:00",
+    "error_host": "host01",
+    "error_info": "存储占用过高",
+    "type": "故障"
+  }
+]

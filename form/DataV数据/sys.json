@@ -1,0 +1,170 @@
+[
+    {
+      "groupname": "城投水务",
+      "sysname": "113数据库",
+      "VM": 1,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "LIMS系统",
+      "VM": 2,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投集团",
+      "sysname": "一屏观城投",
+      "VM": 9,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "人力资源",
+      "VM": 2,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "企业技术标准查询平台",
+      "VM": 2,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "党务公开",
+      "VM": 3,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投集团",
+      "sysname": "协同办公平台",
+      "VM": 17,
+      "luojinshu": 1
+    },
+    {
+      "groupname": "城投集团",
+      "sysname": "城投科技信息管理系统",
+      "VM": 6,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投集团",
+      "sysname": "大数据平台",
+      "VM": 36,
+      "luojinshu": 3
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "客户服务系统（CIS）",
+      "VM": 7,
+      "luojinshu": 3
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "微客服系统",
+      "VM": 27,
+      "luojinshu": 2
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "数据治理",
+      "VM": 26,
+      "luojinshu": 5
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "新装业务系统2.0",
+      "VM": 4,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投集团",
+      "sysname": "智慧城投应急指挥平台",
+      "VM": 3,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投集团",
+      "sysname": "案件信息管理系统",
+      "VM": 8,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "水务大屏2D",
+      "VM": 2,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "水务档案系统",
+      "VM": 4,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "水务集团OA干部管理系统",
+      "VM": 4,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "水务集团污水公司生产管理系统",
+      "VM": 8,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "水务项目管理公司企业级BIM项目管理平台",
+      "VM": 1,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "物资管理",
+      "VM": 4,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投集团",
+      "sysname": "统一身份管理系统",
+      "VM": 6,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投集团",
+      "sysname": "财务系统",
+      "VM": 0,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "进博会保障",
+      "VM": 6,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "集中接收平台（二期）",
+      "VM": 4,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "集团网站",
+      "VM": 13,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投集团",
+      "sysname": "项目管理系统",
+      "VM": 3,
+      "luojinshu": 0
+    },
+    {
+      "groupname": "城投水务",
+      "sysname": "黄埔示范区在线模型系统",
+      "VM": 3,
+      "luojinshu": 0
+    }
+  ]

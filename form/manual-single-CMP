@@ -1,0 +1,1698 @@
+#common
+setenforce 0
+vi /etc/selinux/config
+
+# This file controls the state of SELinux on the system.
+# SELINUX= can take one of these three values:
+#     enforcing - SELinux security policy is enforced.
+#     permissive - SELinux prints warnings instead of enforcing.
+#     disabled - No SELinux policy is loaded.
+SELINUX=disabled
+# SELINUXTYPE= can take one of three two values:
+#     targeted - Targeted processes are protected,
+#     minimum - Modification of targeted policy. Only selected processes are protected.
+#     mls - Multi Level Security protection.
+SELINUXTYPE=targeted
+
+ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+systemctl stop NetworkManager
+systemctl disable NetworkManager
+
+sed -i 's/^verify=.*$/verify=disable/' /etc/python/cert-verification.cfg
+
+cd /etc/yum.repos.d/
+rename .repo .repo.bak *.repo
+
+vi /etc/logrotate.d/syslog
+
+/var/log/cron
+/var/log/maillog
+/var/log/messages
+/var/log/secure
+/var/log/spooler
+{
+    missingok
+    sharedscripts
+    hourly
+    rotate 7
+    size 100M
+    compress
+    postrotate
+        /bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
+    endscript
+}
+
+groupadd -g 10000 cfyuser
+
+visudo -f /etc/sudoers
+## Same thing without a password
+# %wheel        ALL=(ALL)       NOPASSWD: ALL
+%cfyuser        ALL=(ALL)       NOPASSWD: ALL
+
+useradd -u 10000 -g 10000 -s /bin/bash cfyuser
+passwd cfyuser
+#echo "P@ssw0rd" | passwd -stdin cfyuser
+
+cd /home/cfyuser
+mkdir .ssh
+chown cfyuser:cfyuser .ssh
+ssh-keygen -b 2048 -t rsa -f /home/cfyuser/.ssh/id_rsa -q -N  ""
+#sudo -u cfyuser ssh-keygen -b 2048 -t rsa -f /home/cfyuser/.ssh/id_rsa -q -N  ""
+
+#- name: Set up authorized keys for the admin user
+#  authorized_key:
+#    user: "{{ admin_user }}"
+#    key: "{{ item }}"
+#  with_file:
+#    - /root/.ssh/id_rsa.pub
+
+cat /root/.ssh/id_rsa.pub > /home/cfyuser/.ssh/authorized_keys
+
+echo '# Run systemctl' | sudo EDITOR='tee -a' visudo -f /etc/sudoers.d/cfyuser
+echo 'cfyuser ALL=(root) NOPASSWD:/usr/bin/systemctl' | sudo EDITOR='tee -a' visudo -f /etc/sudoers.d/cfyuser
+visudo -cf /etc/sudoers.d/cfyuser
+
+vi /etc/hosts
+192.168.92.16   cmp
+192.168.92.16   consul_node
+192.168.92.16   rabbitmq_node
+192.168.92.16   pushgateway_node
+192.168.92.16   report_node
+
+
+mkdir -p /tmp/cloudchef/packages/
+mkdir -p /tmp/cloudchef/script/
+chmod 0755 /tmp/cloudchef/packages/
+chmod 0755 /tmp/cloudchef/script/
+
+cd /root/smartcmp-ansible/files/
+tar -zxvf softwares.tar.gz -C /tmp/cloudchef/packages/
+
+yum install -y $(ls -1 /tmp/cloudchef/packages/common//system/ | sed 's:^:/tmp/cloudchef/packages/common//system/: ')
+
+cp /tmp/cloudchef/packages/common//libmysqlclient.so.20 /usr/lib64/libmysqlclient.so.20
+
+vi /etc/sysctl.conf
+net.ipv4.ip_local_reserved_ports = 80,443,3000,3005,4822,5671-5672,8080-8082,8100,8500,9089-9091,9093,9272,15672,53229-53230,53333
+net.ipv4.tcp_syn_retries = 2
+net.ipv4.tcp_keepalive_time = 600
+net.ipv4.tcp_orphan_retries = 3
+net.ipv4.tcp_fin_timeout = 30
+net.ipv4.tcp_max_syn_backlog = 4096
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_tw_recycle = 1
+net.ipv4.tcp_keepalive_probes = 5
+net.core.netdev_max_backlog = 3000
+
+sysctl -p
+
+#cmp-basic
+mkdir -p /etc/security/limits.d/
+mkdir -p /var/log/cloudchef/java
+mkdir -p /opt/cloudchef
+mkdir -p /var/cc
+chmod 0755 /etc/security/limits.d/
+chmod 0755 /var/log/cloudchef/java
+chmod 0755 /opt/cloudchef
+chmod 0755 /var/cc
+
+yum install -y /tmp/cloudchef/packages/common//cmp/cfy-3.5-sp.el6.x86_64.rpm
+yum install -y /tmp/cloudchef/packages/common//cmp/jdk-8u131-linux-x64.rpm
+
+rpm -ivh --force --nodeps /tmp/cloudchef/packages/common//cmp/freeipmi-1.5.7-3.el7.x86_64.rpm
+rpm -ivh --force --nodeps /tmp/cloudchef/packages/common//cmp/ipmitool-1.8.18-7.el7.x86_64.rpm
+rpm -ivh --force --nodeps /tmp/cloudchef/packages/common//cmp/ncurses-devel-5.9-14.20130511.el7_4.x86_64.rpm
+rpm -ivh --force --nodeps /tmp/cloudchef/packages/common//cmp/net-snmp-libs-5.7.2-43.el7.x86_64.rpm
+rpm -ivh --force --nodeps /tmp/cloudchef/packages/common//cmp/OpenIPMI-2.0.27-1.el7.x86_64.rpm
+rpm -ivh --force --nodeps /tmp/cloudchef/packages/common//cmp/OpenIPMI-devel-2.0.27-1.el7.x86_64.rpm
+rpm -ivh --force --nodeps /tmp/cloudchef/packages/common//cmp/OpenIPMI-libs-2.0.27-1.el7.x86_64.rpm
+rpm -ivh --force --nodeps /tmp/cloudchef/packages/common//cmp/OpenIPMI-modalias-2.0.27-1.el7.x86_64.rpm
+
+#configs
+mkdir -p /etc/cloudchef/configs/mgmtworker
+mkdir -p /etc/cloudchef/configs/celery-monitor
+mkdir -p /etc/cloudchef/configs/integration
+mkdir -p /etc/cloudchef/configs/sds
+mkdir -p /etc/cloudchef/configs/nginx
+mkdir -p /etc/cloudchef/configs/tomcat
+mkdir -p /etc/cloudchef/configs/report
+mkdir -p /etc/cloudchef/configs/grafana
+mkdir -p /etc/cloudchef/configs/rabbitmq
+mkdir -p /etc/cloudchef/configs/dashboard
+mkdir -p /etc/cloudchef/configs/guacamole
+mkdir -p /etc/cloudchef/configs/logstash
+mkdir -p /etc/cloudchef/configs/restservice
+mkdir -p /etc/cloudchef/configs/consul
+mkdir -p /etc/cloudchef/configs/redis
+
+chmod 755 /etc/cloudchef/configs/*
+
+cd /etc/cloudchef/configs/mgmtworker/
+cp /root/smartcmp-ansible/roles/mgmtworker/templates/mgmtworker.j2 /etc/cloudchef/configs/mgmtworker/cloudchef-mgmtworker
+cp /root/smartcmp-ansible/roles/mgmtworker/templates/logging.conf.j2 /etc/cloudchef/configs/mgmtworker/logging.conf
+cp /root/smartcmp-ansible/roles/mgmtworker/templates/broker_config.json.j2 /etc/cloudchef/configs/mgmtworker/broker_config.json
+sed -i 's/{{ mgmtworker_ssl_enabled | lower }}/true/g' *
+sed -i "s#{{ ssl_path }}#/etc/cloudify/ssl/#g" *
+sed -i 's/{{ rabbitmq_username }}/cloudchef/g' *
+sed -i 's/{{ rabbitmq_password }}/c10udch3f/g' *
+sed -i "s#{{ log_base_path }}#/var/log/cloudchef#g" *
+sed -i 's/{{ public_ip }}/192.168.92.16/g' *
+sed -i 's/{{ cmp_domain_name }}/cmp/g' *
+sed -i "s#{{ ip_scan_url }}#https://127.0.0.1/integration/task/#g" *
+sed -i 's/{{ ignore_ip_conflict_error }}/false/g' *
+sed -i 's/{{ distribution }}/cloudchef/g' *
+sed -i 's/{%if enable_ha %}cmp{% else %}127.0.0.1{% endif %}/127.0.0.1/g' broker_config.json
+sed -i "s#http://{%if enable_ha %}cmp{% else %}127.0.0.1{% endif %}:9090#127.0.0.1#g" cloudchef-mgmtworker
+
+cp /root/smartcmp-ansible/roles/celery-monitor/templates/celery-monitor-env.j2 /etc/cloudchef/configs/celery-monitor/celery-monitor-env
+chown cfyuser:cfyuser /etc/cloudchef/configs/celery-monitor/celery-monitor-env
+sed -i 's/{{ rabbitmq_port }}/5672/g;s/{{ cfyadmin_username }}/admin/g;s/{{ cfyadmin_password }}/admin/g;s/{{ rabbitmq_username }}/cloudchef/g;s/{{ rabbitmq_password }}/c10udch3f/g' celery-monitor-env
+
+cp /root/smartcmp-ansible/roles/integration/templates/env.j2 /etc/cloudchef/configs/integration/env
+cp /root/smartcmp-ansible/roles/integration/templates/gunicorn.py.j2 /etc/cloudchef/configs/integration/gunicorn.py
+cd /etc/cloudchef/configs/integration/
+sed -i 's/{{ rabbitmq_username }}/cloudchef/g;s/{{ rabbitmq_password }}/cloudchef/g;s/{{ rabbitmq_hostname }}/rabbitmq_node/g;s/{{ mysql_username }}/cloudchef/g;s/{{ mysql_password }}/cloudchef/g;s/{{ mysql_hostname }}/cmp/g;s/{{ mysql_port }}/3306/g;s/{{ distribution }}/cloudchef/g;s/{{ public_ip }}/192.168.92.16/g' *
+sed -i "s#amqp://cloudchef:cloudchef@{%if enable_ha %}rabbitmq_node{% else %}127.0.0.1{% endif %}:5671/int#amqp://cloudchef:c10udch3f@127.0.0.1:5671/int#g;s#db+mysql+pymysql://cloudchef:cloudchef@{%if enable_ha %}cmp{% else %}127.0.0.1{% endif %}:3306/int_result#db+mysql+pymysql://cloudchef:c10udch3f@127.0.0.1:3306/int_result#g" env
+sed -i "s#{{ log_base_path }}#/var/log/cloudchef#g" *
+
+cp /root/smartcmp-ansible/roles/sds//templates/sds_conf.j2 /etc/cloudchef/configs/sds//sds.conf.json
+chown cfyuser:cfyuser /etc/cloudchef/configs/sds//sds.conf.json
+cd /etc/cloudchef/configs/sds/
+sed -i 's/{{ admin_user }}/cfyuser/g;s/{{ admin_password }}/P@ssw0rd/g;s/{{ mysql_username }}/cloudchef/g;s/{{ mysql_password }}/c10udch3f/g' sds.conf.json
+sed -i "s#mysql+pymysql://cloudchef:c10udch3f@{%if enable_ha %}{{ mysql_hostname }}{% else %}127.0.0.1{% endif %}/cinder#mysql+pymysql://cloudchef:c10udch3f@127.0.0.1/cinder#g" sds.conf.json
+
+cp /root/smartcmp-ansible/roles/nginx/templates/restart.conf.j2 /etc/cloudchef/configs/nginx/restart.conf
+cp /root/smartcmp-ansible/roles/nginx/templates/default.conf.j2 /etc/cloudchef/configs/nginx/default.conf
+cp /root/smartcmp-ansible/roles/nginx/templates/https-file-server.j2 /etc/cloudchef/configs/nginx/https-file-server.cloudchef
+cp /root/smartcmp-ansible/roles/nginx/templates/https-internal-rest-server.j2 /etc/cloudchef/configs/nginx/https-internal-rest-server.cloudchef
+cp /root/smartcmp-ansible/roles/nginx/templates/https-external-rest-server.j2 /etc/cloudchef/configs/nginx/https-external-rest-server.cloudchef
+cp /root/smartcmp-ansible/roles/nginx/templates/http-file-server.j2 /etc/cloudchef/configs/nginx/http-file-server.cloudchef
+cp /root/smartcmp-ansible/roles/nginx/templates/redirect-to-fileserver-ssl.j2 /etc/cloudchef/configs/nginx/redirect-to-fileserver-ssl.cloudchef
+cp /root/smartcmp-ansible/roles/nginx/templates/logs-conf.j2 /etc/cloudchef/configs/nginx/logs-conf.cloudchef
+cp /root/smartcmp-ansible/roles/nginx/templates/fileserver-location.j2 /etc/cloudchef/configs/nginx/fileserver-location.cloudchef
+cp /root/smartcmp-ansible/roles/nginx/templates/ui-locations.j2 /etc/cloudchef/configs/nginx/ui-locations.cloudchef
+cp /root/smartcmp-ansible/roles/nginx/templates/redirect-to-fileserver.j2 /etc/cloudchef/configs/nginx/redirect-to-fileserver.cloudchef
+cp /root/smartcmp-ansible/roles/nginx/templates/nginx.conf.j2 /etc/cloudchef/configs/nginx/nginx.conf
+cp /root/smartcmp-ansible/roles/nginx/templates/rest-location.j2 /etc/cloudchef/configs/nginx/rest-location.cloudchef
+cp /root/smartcmp-ansible/roles/nginx/templates/integration-location.j2 /etc/cloudchef/configs/nginx/integration-location.cloudchef
+cp /root/smartcmp-ansible/roles/nginx/templates/dashboard-service.j2 /etc/cloudchef/configs/nginx/dashboard-service.cloudchef
+cp /root/smartcmp-ansible/roles/nginx/templates/guacd-files.j2 /etc/cloudchef/configs/nginx/guacd-files.cloudchef
+cd /etc/cloudchef/configs/nginx
+sed -i 's/{{ distribution }}/cloudchef/g' *
+sed -i 's/{{ cmp01_hostname }}/cmp/g' *
+sed -i 's/{{ cmp02_hostname }}/cmp/g' *
+sed -i 's/{{ cmp03_hostname }}/cmp/g' *
+sed -i 's/{{ default_rest_service_port }}/8100/g' *
+sed -i "s/{{ groups\['dashboard_servers'\]\[0\] }}/192.168.92.16/g" *
+sed -i "s/{{ groups\['guacamole_servers'\]\[0\] }}/192.168.92.16/g" *
+sed -i 's/{{ external_rest_protocol }}/https/g' *
+sed -i "s#{{ file_server_root }}#/opt/manager/resources#g" *
+sed -i "s#{{ log_base_path }}#/var/log/cloudchef#g" *
+sed -i "s#{{ ssl_path }}#/etc/cloudify/ssl/#g" *
+sed -i 's/{{ internal_rest_port }}/53333/g' *
+sed -i '/{% if enable_ha %}/d' /etc/cloudchef/configs/nginx/default.conf
+sed -i '/{% else %}/d' /etc/cloudchef/configs/nginx/default.conf
+sed -i '/{% endif %}/d' /etc/cloudchef/configs/nginx/default.conf
+sed -i '/server cmp/d' /etc/cloudchef/configs/nginx/default.conf
+
+cp /root/smartcmp-ansible/roles/tomcat/templates/context.xml.j2 /etc/cloudchef/configs/tomcat/context.xml
+cp /root/smartcmp-ansible/roles/tomcat/templates/tomcat.j2 /etc/cloudchef/configs/tomcat/cloudchef-tomcat
+cp /root/smartcmp-ansible/roles/tomcat/templates/log4j2.xml.j2 /etc/cloudchef/configs/tomcat/log4j2.xml
+cp /root/smartcmp-ansible/roles/tomcat/templates/alarm-operation.json.j2 /etc/cloudchef/configs/tomcat/alarm-operation.json
+cp /root/smartcmp-ansible/roles/tomcat/templates/setenv.sh.j2 /etc/cloudchef/configs/tomcat/setenv.sh
+cp /root/smartcmp-ansible/roles/tomcat/templates/cmp_log4j2.xml.j2 /etc/cloudchef/configs/tomcat/cmp_log4j2.xml
+cp /root/smartcmp-ansible/roles/tomcat/templates/process_log4j2.xml.j2 /etc/cloudchef/configs/tomcat/process_log4j2.xml
+cp /root/smartcmp-ansible/roles/tomcat/templates/notification_log4j2.xml.j2 /etc/cloudchef/configs/tomcat/notification_log4j2.xml
+cd /etc/cloudchef/configs/tomcat/
+sed -i 's/{{ distribution }}/cloudchef/g;s/{{ product }}/smartcmp/g;s/{{ prometheus01_hostname }}/cmp/g;s/{{ prometheus_service_port }}/9090/g;s/{{ prometheus_resource_service_port }}/9089/g;s/{{ pushgateway_hostname }}/pushgateway_node/g;s/{{ pushgateway_port }}/9091/g;s/{{ cmp_domain_name }}/cmp/g;s/{{ consul_hostname }}/consul_node/g;s/{{ rabbitmq_public_ip }}/192.168.92.16/g;s/{{ rabbitmq_username }}/cloudchef/g;s/{{ rabbitmq_password }}/c10udch3f/g;s/{{ default_password }}/c10udch3f/g;s/{{ mysql_username }}/cloudchef/g;s/{{ mysql_password }}/c10udch3f/g' *
+sed -i 's/{{ amqp_ssl_enabled }}/true/g;s/{{ mysql_hostname }}/cmp/g;s/{{ mysql_port }}/3306/g;s/{{ report_public_ip }}/192.168.92.16/g;s/{{ report_service_username }/sysadmin@mail.com/g' *
+
+
+
+sed -i 's/{{ default_locale }}/zh_CN/g' *
+sed -i "s#{{ install_base_path }}#/opt/cloudchef#g;s#{{ log_base_path }}#/var/log/cloudchef#g" *
+sed -i "s#{{ ssl_path }}#/etc/cloudify/ssl/#g" *
+sed -i "s#http://{%if enable_ha %}cmp{% else %}127.0.0.1{% endif %}:9090#http://127.0.0.1:9090#g;s#http://{%if enable_ha %}cmp{% else %}127.0.0.1{% endif %}:9089#http://127.0.0.1:9089#g;s#http://{%if enable_ha %}pushgateway_node{% else %}127.0.0.1{% endif %}:9091#http://127.0.0.1:9091#g;s#{%if enable_ha %}consul_node{% else %}127.0.0.1{% endif %}#127.0.0.1#g;s#{%if enable_ha %}192.168.92.16{% else %}127.0.0.1{% endif %}#127.0.0.1#g;s#{% if amqp_ssl_enabled %}5671{% else %}5672{% endif %}#5671#g" *
+sed -i '/^{% if amqp_ssl_enabled %}$/d' setenv.sh
+sed -i '/^{% endif %}$/d' setenv.sh
+sed -i "s#{%if enable_ha %}{% for ip in groups\['redis_servers'\] %}{{ ip }}:7000,{{ ip }}:7001{% if not loop.last  %},{% endif %}{% endfor %}{% else %}none{% endif %}#none#g" setenv.sh
+sed -i "s/{{ report_service_password }}/P@ssw0rd/g" setenv.sh
+sed -i "s/sysadmin@mail.com}/sysadmin@mail.com/g" setenv.sh
+sed -i "s#{%if enable_ha %}cmp{% else %}127.0.0.1{% endif %}#127.0.0.1#g" setenv.sh
+sed -i "s#{%if enable_ha %}{{ groups\['redis_servers'\]\[0\] }}{% else %}127.0.0.1{% endif %}#127.0.0.1#g" setenv.sh
+sed -i 's/{%if enable_ha %}7000{% else %}6379{% endif %}/6379/g' setenv.sh
+
+cp /root/smartcmp-ansible/roles/report/templates/setenv.sh.j2 /etc/cloudchef/configs/report/setenv.sh
+cp /root/smartcmp-ansible/roles/report/templates/report.j2 /etc/cloudchef/configs/report/cloudchef-report
+cp /root/smartcmp-ansible/roles/report/templates/context.xml.j2 /etc/cloudchef/configs/report/context.xml
+cp /root/smartcmp-ansible/roles/report/templates/log4j2.xml.j2 /etc/cloudchef/configs/report/log4j2.xml
+cd /etc/cloudchef/configs/report/
+sed -i "s#{{ install_base_path }}#/opt/cloudchef#g;s#{{ log_base_path }}#/var/log/cloudchef#g;s#{{ distribution }}#cloudchef#g;s#{{ product }}#smartcmp#g;s#{{ default_password }}#c10udch3f#g;s#{{ mysql_username }}#cloudchef#g;s#{{ mysql_password }}#c10udch3f#g" *
+sed -i 's/{{ mysql_port }}/3306/g' setenv.sh
+sed -i 's/{%if enable_ha %}{{ mysql_hostname }}{% else %}127.0.0.1{% endif %}/127.0.0.1/g' setenv.sh
+
+cp /root/smartcmp-ansible/roles/grafana/templates/restart.conf.j2 /etc/cloudchef/configs/grafana/restart.conf
+cp /root/smartcmp-ansible/roles/grafana/templates/grafana.ini.j2 /etc/cloudchef/configs/grafana/grafana.ini
+cd /etc/cloudchef/configs/grafana/
+sed -i "s#{{ log_base_path }}#/var/log/cloudchef#g" *
+
+cp /root/smartcmp-ansible/roles/rabbitmq/templates/rabbitmq.j2 /etc/cloudchef/configs/rabbitmq/cloudchef-rabbitmq
+cp /root/smartcmp-ansible/roles/rabbitmq/templates/rabbitmq_ulimit.conf.j2 /etc/cloudchef/configs/rabbitmq/rabbitmq.conf
+cp /root/smartcmp-ansible/roles/rabbitmq/templates/rabbitmq-definitions.json.j2 /etc/cloudchef/configs/rabbitmq/definitions.json
+cp /root/smartcmp-ansible/roles/rabbitmq/templates/rabbitmq-env.conf.j2 /etc/cloudchef/configs/rabbitmq/rabbitmq-env.conf
+cp /root/smartcmp-ansible/roles/rabbitmq/templates/rabbitmq.config.j2 /etc/cloudchef/configs/rabbitmq/rabbitmq.config
+cp /root/smartcmp-ansible/roles/rabbitmq/templates/.erlang.cookie.j2 /etc/cloudchef/configs/rabbitmq/.erlang.cookie
+chown cfyuser:cfyuser /etc/cloudchef/configs/rabbitmq/*
+chmod 0664 /etc/cloudchef/configs/rabbitmq/*
+cd /etc/cloudchef/configs/rabbitmq/
+sed -i "s#{{ log_base_path }}#/var/log/cloudchef#g;s#{{ rabbitmq_LimitNOFILE }}#102400#g;s#{{ ssl_path }}#/etc/cloudify/ssl/#g;s#{{ distribution }}#cloudchef#g" *
+
+cp /root/smartcmp-ansible/roles/dashboard/templates/startup.sh.j2 /etc/cloudchef/configs/dashboard/startup.sh
+cp /root/smartcmp-ansible/roles/dashboard/templates/dashboard.j2 /etc/cloudchef/configs/dashboard/cloudchef-dashboard
+cd  /etc/cloudchef/configs/dashboard/
+sed -i "s#{{ install_base_path }}#/opt/cloudchef#g;s#{{ dashboard_database_name }}#SmartCMPDashboard#g;s#{{ mysql_port }}#3306#g;s#{{ mysql_username }}#cloudchef#g;s#{{ mysql_password }}#c10udch3f#g" *
+sed -i "s#{{ log_base_path }}#/var/log/cloudchef#g;s#{{ dashboard_jar }}#smartcmpdashboard.jar#g" *
+sed -i 's/{%if enable_ha %}{{ mysql_hostname }}{% else %}127.0.0.1{% endif %}/127.0.0.1/g' *
+
+cp /root/smartcmp-ansible/roles/guacamole/templates/guacamole.properties.j2 /etc/cloudchef/configs/guacamole/guacamole.properties
+cd /etc/cloudchef/configs/guacamole/
+sed -i 's/{{ mysql_port }}/3306/g;s/{{ guacamole_database_name }}/guacamole_db/g;s/{{ guacamole_database_username }}/guacamole_user/g;s/{{ guacamole_database_password }}/guacamole_password/g;s/{{ mysql_public_ip }}/192.168.92.16/g' *
+sed -i 's/{%if enable_ha %}{{ mysql_hostname }}{% else %}localhost{% endif %}/localhost/g' *
+
+cp /root/smartcmp-ansible/roles/logstash/templates/restart.conf.j2 /etc/cloudchef/configs/logstash/restart.conf
+cp /root/smartcmp-ansible/roles/logstash/templates/logstash.conf.j2 /etc/cloudchef/configs/logstash/logstash.conf
+cp /root/smartcmp-ansible/roles/logstash/templates/logstash.j2 /etc/cloudchef/configs/logstash/cloudchef-logstash
+cp /root/smartcmp-ansible/roles/logstash/templates/logstash_heartbeat.j2 /etc/cloudchef/configs/logstash/logstash_heartbeat
+cd /etc/cloudchef/configs/logstash/
+sed -i "s#{{ log_base_path }}#/var/log/cloudchef#g;s#{{ rabbitmq_username }}#cloudchef#g;s#{{ rabbitmq_password }}#c10udch3f#g" *
+sed -i 's/{%if enable_ha %}{{ rabbitmq_hostname }}{% else %}127.0.0.1{% endif %}/127.0.0.1/g;s/{{ mysql_port }}/3306/g;s/{%if enable_ha %}{{ mysql_hostname }}{% else %}127.0.0.1{% endif %}/127.0.0.1/g;s/{{ Orchestrator_database_name }}/SmartCMP_Orchestrator/g;s/{{ mysql_username }}/cloudchef/g;s/{{ mysql_password }}/c10udch3f/g' *
+
+cp /root/smartcmp-ansible/roles/restservice/templates/db.py.j2 /etc/cloudchef/configs/restservice/db.py
+cp /root/smartcmp-ansible/roles/restservice/templates/db_args.json.j2 /etc/cloudchef/configs/restservice/db_args.json
+cp /root/smartcmp-ansible/roles/restservice/templates/rest.conf.j2 /etc/cloudchef/configs/restservice/cloudchef-rest.conf
+cp /root/smartcmp-ansible/roles/restservice/templates/rest-security.conf.j2 /etc/cloudchef/configs/restservice/rest-security.conf
+cp /root/smartcmp-ansible/roles/restservice/templates/restservice.j2 /etc/cloudchef/configs/restservice/cloudchef-restservice
+cd /etc/cloudchef/configs/restservice/
+sed -i "s#{{ log_base_path }}#/var/log/cloudchef#g" *
+sed -i 's/{{ distribution }}/cloudchef/g;s/{{ Orchestrator_database_name }}/SmartCMP_Orchestrator/g;s/{{ mysql_port }}/3306/g;s/{{ mysql_username }}/cloudchef/g;s/{{ mysql_password }}/c10udch3f/g;s/{{ rabbitmq_username }}/cloudchef/g;s/{{ rabbitmq_password }}/c10udch3f/g;s/{{ rest_service_ssl_enabled }}/True/g;s/{{ cmp_domain_name }}/cmp/g;s/{{ mysql_hostname }}/cmp/g;s/{{ cfyadmin_username }}/admin/g;s/{{ cfyadmin_password }}/admin/g' *
+sed -i "s#{{ ssl_path }}#/etc/cloudify/ssl/#g" *
+sed -i 's/{%if enable_ha %}cmp{% else %}127.0.0.1{% endif %}/127.0.0.1/g;s/{%if enable_ha %}{{ rabbitmq_hostname }}{% else %}127.0.0.1{% endif %}/127.0.0.1/g;s/{% if rest_service_ssl_enabled %}5671{% else %}5672{% endif %}/5671/g' *
+
+cp /root/smartcmp-ansible/roles/redis/templates/redis.conf.j2 /etc/cloudchef/configs/redis/redis.conf
+cp /root/smartcmp-ansible/roles/redis/templates/redis-7000.conf.j2 /etc/cloudchef/configs/redis/redis-7000.conf
+cp /root/smartcmp-ansible/roles/redis/templates/redis-7001.conf.j2 /etc/cloudchef/configs/redis/redis-7001.conf
+cd /etc/cloudchef/configs/redis/
+sed -i "s#{{ log_base_path }}#/var/log/cloudchef#g;s#{{ redis_path }}#redis/#g;s#{{ redis_masterauth }}#c10udch3f#g;s#{{ redis_password }}#c10udch3f#g" *
+
+cp /root/smartcmp-ansible/roles/mgmtworker/templates/logrotate_mgmtworker.j2 /etc/cloudchef/configs/mgmtworker/mgmtworker
+cp /root/smartcmp-ansible/roles/integration/templates/logrotate_integration.j2 /etc/cloudchef/configs/integration/integration
+cp /root/smartcmp-ansible/roles/nginx/templates/logrotate_nginx.j2 /etc/cloudchef/configs/nginx/nginx
+cp /root/smartcmp-ansible/roles/grafana/templates/logrotate_grafana.j2 /etc/cloudchef/configs/grafana/grafana-server
+cp /root/smartcmp-ansible/roles/rabbitmq/templates/logrotate_rabbitmq.j2 /etc/cloudchef/configs/rabbitmq/rabbitmq
+cp /root/smartcmp-ansible/roles/logstash/templates/logrotate_logstash.j2 /etc/cloudchef/configs/logstash/logstash
+cp /root/smartcmp-ansible/roles/restservice/templates/logrotate_restservice.j2 /etc/cloudchef/configs/restservice/restservice
+
+#ui
+cd /root/smartcmp-ansible/files/
+tar -zxvf platform-ui.tar.gz -C /opt/cloudchef
+
+#nginx
+firewall-cmd --zone=public --add-port=80/tcp --permanent
+firewall-cmd --zone=public --add-port=443/tcp --permanent
+firewall-cmd --zone=public --add-port=3000/tcp --permanent
+firewall-cmd --zone=public --add-port=8100/tcp --permanent
+firewall-cmd --zone=public --add-port=8080/tcp --permanent
+firewall-cmd --zone=public --add-port=8200/tcp --permanent
+firewall-cmd --zone=public --add-port=53229/tcp --permanent
+firewall-cmd --zone=public --add-port=53230/tcp --permanent
+firewall-cmd --reload
+
+
+mkdir -p /opt/manager/resources/packages/agents
+mkdir -p /opt/manager/resources/packages/scripts
+mkdir -p /opt/manager/resources/packages/templates
+mkdir -p /etc/systemd/system/nginx.service.d
+mkdir -p /opt/manager/resources/guacd
+mkdir -p /etc/cloudify/ssl/
+mkdir -p /var/log/cloudchef/nginx
+mkdir -p /etc/cloudchef/configs/ssl
+
+chown cfyuser:cfyuser /etc/cloudify/ssl/
+
+touch /var/log/cloudchef/nginx/error.log
+chown cfyuser:cfyuser /var/log/cloudchef/nginx/error.log
+
+yum -y install /tmp/cloudchef/packages/nginx/nginx-1.14.2-1.el7_4.ngx.x86_64.rpm
+systemctl stop nginx
+
+usermod -u 10007 nginx
+groupmod -g 10007 nginx
+
+rm -f /etc/nginx/nginx.conf
+ln -s /etc/cloudchef/configs/nginx/restart.conf /etc/systemd/system/nginx.service.d/restart.conf
+ln -s /etc/cloudchef/configs/nginx/default.conf /etc/nginx/conf.d/default.conf
+ln -s /etc/cloudchef/configs/nginx/https-file-server.cloudchef /etc/nginx/conf.d/https-file-server.cloudchef
+ln -s /etc/cloudchef/configs/nginx/https-internal-rest-server.cloudchef /etc/nginx/conf.d/https-internal-rest-server.cloudchef
+ln -s /etc/cloudchef/configs/nginx/https-external-rest-server.cloudchef /etc/nginx/conf.d/https-external-rest-server.cloudchef
+ln -s /etc/cloudchef/configs/nginx/http-file-server.cloudchef /etc/nginx/conf.d/http-file-server.cloudchef
+ln -s /etc/cloudchef/configs/nginx/redirect-to-fileserver-ssl.cloudchef /etc/nginx/conf.d/redirect-to-fileserver-ssl.cloudchef
+ln -s /etc/cloudchef/configs/nginx/logs-conf.cloudchef /etc/nginx/conf.d/logs-conf.cloudchef
+ln -s /etc/cloudchef/configs/nginx/fileserver-location.cloudchef /etc/nginx/conf.d/fileserver-location.cloudchef
+ln -s /etc/cloudchef/configs/nginx/ui-locations.cloudchef /etc/nginx/conf.d/ui-locations.cloudchef
+ln -s /etc/cloudchef/configs/nginx/redirect-to-fileserver.cloudchef /etc/nginx/conf.d/redirect-to-fileserver.cloudchef
+ln -s /etc/cloudchef/configs/nginx/nginx.conf /etc/nginx/nginx.conf
+ln -s /etc/cloudchef/configs/nginx/rest-location.cloudchef /etc/nginx/conf.d/rest-location.cloudchef
+ln -s /etc/cloudchef/configs/nginx/integration-location.cloudchef /etc/nginx/conf.d/integration-location.cloudchef
+ln -s /etc/cloudchef/configs/nginx/dashboard-service.cloudchef /etc/nginx/conf.d/dashboard-service.cloudchef
+ln -s /etc/cloudchef/configs/nginx/guacd-files.cloudchef /etc/nginx/conf.d/guacd-files.cloudchef
+cd /etc/nginx/conf.d/
+chown -h cfyuser:cfyuser *
+cd /etc/systemd/system/nginx.service.d/
+chown -h cfyuser:cfyuser *
+
+cd /etc/logrotate.d
+rm -f nginx
+ln -s /etc/cloudchef/configs/nginx/nginx /etc/logrotate.d/nginx
+
+cd /root/smartcmp-ansible/files/
+tar -zxvf terraform-plugins.tar.gz -C /opt/manager/resources
+chown -R cfyuser:cfyuser /opt/manager/resources
+
+cd /root/smartcmp-ansible/files/
+tar -zxvf agents.tar.gz -C /opt/manager/resources/packages
+chown -R cfyuser:cfyuser /opt/manager/resources/packages
+
+chown -R cfyuser:cfyuser /opt/manager/resources/packages/agents
+
+cd /root/smartcmp-ansible/files/
+tar -zxvf /tmp/cloudchef/packages/prometheus/prometheus_exporter.tar.gz -C /opt/manager/resources/packages
+chown -R cfyuser:cfyuser /opt/manager/resources/packages
+
+sed -i 's/{{ cmp_domain_name }}/cmp/g' /tmp/template
+sed -i 's/{{ public_ip }}/192.168.92.16/g' /tmp/template
+
+openssl req -x509 -newkey rsa:2048 -keyout /etc/cloudchef/configs/ssl/cloudify_internal_key.pem -out /etc/cloudchef/configs/ssl/cloudify_internal_cert.pem -days 3650 -batch -nodes -subj /CN=192.168.92.16 -config /tmp/template
+
+openssl pkcs12 -export -out /etc/cloudchef/configs/ssl/cloudify_internal.p12 -in /etc/cloudchef/configs/ssl/cloudify_internal_cert.pem -inkey /etc/cloudchef/configs/ssl/cloudify_internal_key.pem -password pass:c10udch3f
+
+ln -s /etc/cloudchef/configs/ssl/cloudify_internal_cert.pem /etc/cloudify/ssl//cloudify_internal_cert.pem
+ln -s /etc/cloudchef/configs/ssl/cloudify_internal_key.pem /etc/cloudify/ssl//cloudify_internal_key.pem
+ln -s /etc/cloudchef/configs/ssl/cloudify_internal.p12 /etc/cloudify/ssl//cloudify_internal.p12
+cd /etc/cloudify/ssl/
+chown -h cfyuser:cfyuser *
+
+systemctl start nginx
+rm -f /tmp/template
+
+#consul
+firewall-cmd --zone=public --add-port=8300/tcp --permanent
+firewall-cmd --zone=public --add-port=8301/tcp --permanent
+firewall-cmd --zone=public --add-port=8500/tcp --permanent
+
+firewall-cmd --reload
+
+groupadd -g 10002 consul
+
+useradd -u 10002 -g 10002 -s /sbin/nologin -d /opt/cloudchef/consul consul
+
+mkdir -p /etc/consul.d
+
+mkdir -p /opt/cloudchef/consul
+mkdir -p /opt/cloudchef/consul/data
+chown consul:consul /opt/cloudchef/consul
+chown consul:consul /opt/cloudchef/consul/data
+chmod 755 /opt/cloudchef/consul
+chmod 755 /opt/cloudchef/consul/data
+
+unzip /tmp/cloudchef/packages/consul/consul_1.6.1_linux_amd64.zip -d /opt/cloudchef/consul
+chown -R consul:consul /opt/cloudchef/consul/
+
+chmod +x /opt/cloudchef/consul/consul
+
+ln -s /opt/cloudchef/consul/consul /bin/consul
+chown -h consul:consul /bin/consul
+
+cp /root/smartcmp-ansible/roles/consul/templates/consul.service.j2 /usr/lib/systemd/system/cloudchef-consul.service
+chmod 664 /usr/lib/systemd/system/cloudchef-consul.service
+sed -i "s#{{ consul_service_user }}#consul#g;s#{{ consul_service_group }}#consul#g;s#{{ install_base_path }}#/opt/cloudchef#g" /usr/lib/systemd/system/cloudchef-consul.service
+sed -i '/{% if enable_ha %}/d;/expect=3$/d;/{% else %}/d;/{% endif %}/d' /usr/lib/systemd/system/cloudchef-consul.service
+
+systemctl daemon-reload
+
+cp /root/smartcmp-ansible/roles/consul/templates/setting.json.j2 /etc/consul.d/setting.json
+chmod 664 /etc/consul.d/setting.json
+sed -i "s#{{ install_base_path }}#/opt/cloudchef#g" /etc/consul.d/setting.json
+sed -i 's/{{ inventory_hostname }}/192.168.92.16/g' /etc/consul.d/setting.json
+
+systemctl start cloudchef-consul
+systemctl enable cloudchef-consul
+
+#rabbitmq
+firewall-cmd --zone=public --add-port=5671/tcp --permanent
+firewall-cmd --zone=public --add-port=5672/tcp --permanent
+firewall-cmd --reload
+
+groupadd -g 10003 rabbitmq
+useradd -u 10003 -g 10003 -s /sbin/nologin -d /etc/rabbitmq rabbitmq
+
+ln -s /etc/cloudchef/configs/rabbitmq/rabbitmq /etc/logrotate.d/rabbitmq
+chown -h root:root /etc/logrotate.d/rabbitmq
+chmod 0644 /etc/cloudchef/configs/rabbitmq/rabbitmq
+
+mkdir -p /etc/rabbitmq
+mkdir -p /var/log/cloudchef/rabbitmq
+mkdir -p /var/run/rabbitmq
+chmod 755 /etc/rabbitmq
+chmod 755 /var/log/cloudchef/rabbitmq
+chmod 755 /var/run/rabbitmq
+chown rabbitmq:rabbitmq /etc/rabbitmq
+chown rabbitmq:rabbitmq /var/log/cloudchef/rabbitmq
+chown rabbitmq:rabbitmq /var/run/rabbitmq
+
+yum -y install /tmp/cloudchef/packages/rabbitmq/socat-1.7.2.2-5.el7.x86_64.rpm
+yum -y install /tmp/cloudchef/packages/rabbitmq/erlang-21.3.8.3-1.el7.x86_64.rpm
+yum -y install /tmp/cloudchef/packages/rabbitmq/rabbitmq-server-3.7.15-1.el7.noarch.rpm
+
+ln -s /etc/cloudchef/configs/rabbitmq/rabbitmq.conf /etc/security/limits.d/rabbitmq.conf
+chown -h cfyuser:cfyuser /etc/security/limits.d/rabbitmq.conf
+chmod 644 /etc/cloudchef/configs/rabbitmq/rabbitmq.conf
+
+ln -s /etc/cloudchef/configs/rabbitmq/rabbitmq-env.conf /etc/rabbitmq/rabbitmq-env.conf
+ln -s /etc/cloudchef/configs/rabbitmq/definitions.json /etc/rabbitmq/definitions.json
+ln -s /etc/cloudchef/configs/rabbitmq/rabbitmq.config /etc/rabbitmq/rabbitmq.config
+chown -h rabbitmq:rabbitmq /etc/rabbitmq/rabbitmq-env.conf
+chown -h rabbitmq:rabbitmq /etc/rabbitmq/definitions.json
+chown -h rabbitmq:rabbitmq /etc/rabbitmq/rabbitmq.config
+chmod 664 /etc/cloudchef/configs/rabbitmq/rabbitmq-env.conf
+chmod 664 /etc/cloudchef/configs/rabbitmq/definitions.json
+chmod 664 /etc/cloudchef/configs/rabbitmq/rabbitmq.config
+
+cp /root/smartcmp-ansible/roles/rabbitmq/templates/rabbitmq.j2 /etc/sysconfig/cloudchef-rabbitmq
+chmod 664 /etc/sysconfig/cloudchef-rabbitmq
+chown cfyuser:cfyuser /etc/sysconfig/cloudchef-rabbitmq
+sed -i "s#{{ log_base_path }}#/var/log/cloudchef#g" /etc/sysconfig/cloudchef-rabbitmq
+
+cp /root/smartcmp-ansible/roles/rabbitmq/templates/rabbitmq.service.j2 /usr/lib/systemd/system/cloudchef-rabbitmq.service
+chmod 664 /usr/lib/systemd/system/cloudchef-rabbitmq.service
+sed -i 's/{{ rabbitmq_service_user }}/rabbitmq/g;s/{{ rabbitmq_service_group }}/rabbitmq/g;s/{{ distribution }}/cloudchef/g;s/{{ rabbitmq_LimitNOFILE }}/102400/g' /usr/lib/systemd/system/cloudchef-rabbitmq.service
+
+systemctl daemon-reload
+
+rmdir /var/lib/rabbitmq/mnesia
+
+chown -R rabbitmq:rabbitmq /etc/rabbitmq/
+
+systemctl daemon-reload
+
+rabbitmq-plugins disable rabbitmq_management
+rabbitmq-plugins disable rabbitmq_tracing
+
+systemctl restart cloudchef-rabbitmq
+
+rabbitmqctl clear_permissions guest
+rabbitmqctl delete_user guest
+rabbitmqctl list_users
+
+rabbitmqctl add_user cloudchef c10udch3f
+rabbitmqctl set_permissions -p / cloudchef ".*" ".*" ".*"
+rabbitmqctl set_user_tags cloudchef administrator
+
+rabbitmqctl add_vhost int
+rabbitmqctl set_permissions -p int cloudchef ".*" ".*" ".*"
+
+cp -f /root/smartcmp-ansible/roles/rabbitmq/templates/rabbitmq.config.j2 /etc/rabbitmq/rabbitmq.config
+sed -i "s#{{ ssl_path }}#/etc/cloudify/ssl/#g" /etc/rabbitmq/rabbitmq.config
+chmod 664 /etc/rabbitmq/rabbitmq.config
+chown rabbitmq:rabbitmq /etc/rabbitmq/rabbitmq.config
+
+systemctl restart cloudchef-rabbitmq
+
+sleep 30
+
+rabbitmqctl set_policy logs_queue_message_policy '^cloudify-logs$' '{"message-ttl":60000, "max-length":1000000}' --apply-to queues
+rabbitmqctl set_policy events_queue_message_policy '^cloudify-events$' '{"message-ttl":60000, "max-length":1000000}' --apply-to queues
+rabbitmqctl set_policy metrics_queue_message_policy '^amq\\.gen.*$' '{"message-ttl":60000, "max-length":1000000}' --apply-to queues
+
+systemctl restart cloudchef-rabbitmq
+
+sleep 30
+
+rabbitmq-plugins enable rabbitmq_management
+rabbitmq-plugins enable rabbitmq_tracing
+rabbitmq-plugins enable rabbitmq_federation --offline
+rabbitmq-plugins enable rabbitmq_federation_management --offline
+
+chmod 755 /etc/cloudchef/configs/rabbitmq
+systemctl restart cloudchef-rabbitmq
+
+#mysql
+firewall-cmd --zone=public --add-port=3306/tcp --permanent
+firewall-cmd --reload
+
+yum -y remove mariadb-libs
+
+groupadd -g 10009 mysql
+
+useradd -u 10009 -g 10009 mysql
+
+yum -y install /tmp/cloudchef/packages/mysql/mysql-community-common-8.0.16-2.el7.x86_64.rpm
+yum -y install /tmp/cloudchef/packages/mysql/mysql-community-libs-8.0.16-2.el7.x86_64.rpm
+yum -y install /tmp/cloudchef/packages/mysql/mysql-community-client-8.0.16-2.el7.x86_64.rpm
+yum -y install /tmp/cloudchef/packages/mysql/mysql-community-devel-8.0.16-2.el7.x86_64.rpm
+yum -y install /tmp/cloudchef/packages/mysql/mysql-community-server-8.0.16-2.el7.x86_64.rpm
+
+rmdir /var/lib/mysql
+
+/usr/sbin/mysqld --initialize-insecure  --user=mysql
+
+systemctl restart mysqld
+systemctl enable mysqld
+
+mysql -uroot -P 3306 --skip-password -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'c10udch3f';"
+
+mysql -uroot -P 3306 -p"c10udch3f" -e "create user 'cloudchef'@'%' identified with mysql_native_password by 'c10udch3f';"
+mysql -uroot -P 3306 -p"c10udch3f" -e "create user 'cloudchef-report'@'%' identified with mysql_native_password by 'c10udch3f';"
+mysql -uroot -P 3306 -p"c10udch3f" -e "create user 'cloudchef-dashboard'@'%' identified with mysql_native_password by 'c10udch3f';"
+
+mysql -uroot -P 3306 -p"c10udch3f" -e "grant all on *.* to 'cloudchef'@'%';"
+mysql -uroot -P 3306 -p"c10udch3f" -e "grant all on *.* to 'cloudchef-report'@'%';"
+mysql -uroot -P 3306 -p"c10udch3f" -e "grant all on *.* to 'cloudchef-dashboard'@'%';"
+
+mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -p"c10udch3f" mysql
+#mysql: [Warning] Using a password on the command line interface can be insecure.
+#Warning: Unable to load '/usr/share/zoneinfo/iso3166.tab' as time zone. Skipping it.
+#Warning: Unable to load '/usr/share/zoneinfo/zone.tab' as time zone. Skipping it.
+
+mv /etc/my.cnf /etc/my.cnf.bak
+cp /root/smartcmp-ansible/roles/mysql/templates/my.cnf.j2 /etc/my.cnf
+sed -i 's/{{ mysql_port }}/3306/g' /etc/my.cnf
+sed -i '118,138d' /etc/my.cnf
+
+systemctl stop mysqld
+systemctl start mysqld
+
+mysql -uroot -P 3306 -p"c10udch3f" -e  "CREATE DATABASE IF NOT EXISTS SmartCMP DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"
+mysql -uroot -P 3306 -p"c10udch3f" -e  "CREATE DATABASE IF NOT EXISTS SmartCMP_Orchestrator DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"
+mysql -uroot -P 3306 -p"c10udch3f" -e  "CREATE DATABASE IF NOT EXISTS SmartCMPReport DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"
+mysql -uroot -P 3306 -p"c10udch3f" -e  "CREATE DATABASE IF NOT EXISTS SmartCMPDashboard DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"
+mysql -uroot -P 3306 -p"c10udch3f" -e  "CREATE DATABASE IF NOT EXISTS SmartCMP_Flow DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"
+mysql -uroot -P 3306 -p"c10udch3f" -e  "CREATE DATABASE IF NOT EXISTS SmartCMP_Ops_Listener DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"
+
+cp -f /root/smartcmp-ansible/roles/mysql/templates/logrotate_mysql.j2  /etc/logrotate.d/mysql
+chmod 644 /etc/logrotate.d/mysql
+chown root:root /etc/logrotate.d/mysql
+
+#redis
+firewall-cmd --zone=public --add-port=7000/tcp --permanent
+firewall-cmd --zone=public --add-port=17000/tcp --permanent
+firewall-cmd --zone=public --add-port=7001/tcp --permanent
+firewall-cmd --zone=public --add-port=17001/tcp --permanent
+
+firewall-cmd --reload
+
+yum -y install /tmp/cloudchef/packages/redis/redis-5.0.5-1.el7.remi.x86_64.rpm
+
+mkdir -p /var/log/cloudchef/redis/
+chown redis:redis /var/log/cloudchef/redis/
+
+touch /var/log/cloudchef/redis/redis.log
+chown redis:redis /var/log/cloudchef/redis/redis.log
+
+mv /etc/redis.conf /etc/redis.conf.bak
+ln -s /etc/cloudchef/configs/redis/redis.conf /etc/redis.conf
+chown -h redis:redis /etc/redis.conf
+chmod 755 /etc/redis.conf
+
+systemctl restart redis
+systemctl enable redis
+
+#prometheus
+firewall-cmd --zone=public --add-port=9089/tcp --permanent
+firewall-cmd --zone=public --add-port=9090/tcp --permanent
+
+firewall-cmd --reload
+
+groupadd -g 10004 prometheus
+
+useradd -u 10004 -g 10004 prometheus
+
+tar -zxvf /tmp/cloudchef/packages/prometheus/prometheus-2.13.1.linux-amd64.tar.gz -C /opt/cloudchef
+chown -R prometheus:prometheus /opt/cloudchef/prometheus-2.13.1.linux-amd64/
+
+mv /opt/cloudchef/prometheus-2.13.1.linux-amd64 /opt/cloudchef/prometheus
+
+mkdir -p /opt/cloudchef/prometheus/rules
+mkdir -p /var/lib/prometheus
+mkdir -p /var/lib/prometheus-resource
+chmod 755 /opt/cloudchef/prometheus/rules
+chmod 755 /var/lib/prometheus
+chmod 755 /var/lib/prometheus-resource
+chown prometheus:prometheus /opt/cloudchef/prometheus/rules
+chown prometheus:prometheus /var/lib/prometheus
+chown prometheus:prometheus /var/lib/prometheus-resource
+
+cp -f /root/smartcmp-ansible/roles/prometheus/templates/prometheus.yml.j2 /opt/cloudchef/prometheus/prometheus.yml
+sed -i 's/{%if enable_ha %}{{ prometheus01_hostname }}{% else %}127.0.0.1{% endif %}/127.0.0.1/g' /opt/cloudchef/prometheus/prometheus.yml
+sed -i 's/{%if enable_ha %}{{ consul_hostname }}{% else %}127.0.0.1{% endif %}/127.0.0.1/g' /opt/cloudchef/prometheus/prometheus.yml
+sed -i "s#{{ install_base_path }}#/opt/cloudchef#g" /opt/cloudchef/prometheus/prometheus.yml
+chmod 664 /opt/cloudchef/prometheus/prometheus.yml
+chown prometheus:prometheus /opt/cloudchef/prometheus/prometheus.yml
+
+cp /root/smartcmp-ansible/roles/prometheus/templates/prometheus-resource.yml.j2 /opt/cloudchef/prometheus/prometheus-resource.yml
+chmod 664 /opt/cloudchef/prometheus/prometheus-resource.yml
+chown prometheus:prometheus /opt/cloudchef/prometheus/prometheus-resource.yml
+
+cp /root/smartcmp-ansible/roles/prometheus/templates/prometheus.service.j2 /usr/lib/systemd/system/cloudchef-prometheus.service
+sed -i "s#{{ install_base_path }}#/opt/cloudchef#g;s#{{ prometheus_service_port }}#9090#g" /usr/lib/systemd/system/cloudchef-prometheus.service
+chmod 664 /usr/lib/systemd/system/cloudchef-prometheus.service
+chown cfyuser:cfyuser /usr/lib/systemd/system/cloudchef-prometheus.service
+
+cp /root/smartcmp-ansible/roles/prometheus/templates/prometheus-resource.service.j2 /usr/lib/systemd/system/cloudchef-prometheus-resource.service
+chmod 664 /usr/lib/systemd/system/cloudchef-prometheus-resource.service
+sed -i "s#{{ install_base_path }}#/opt/cloudchef#g" /usr/lib/systemd/system/cloudchef-prometheus-resource.service
+sed -i 's/{{ prometheus_resource_service_port }}/9089/g' /usr/lib/systemd/system/cloudchef-prometheus-resource.service
+
+cp /root/smartcmp-ansible/roles/prometheus/templates/apache_metric.rules.j2 /opt/cloudchef/prometheus/rules/apache_metric.rules
+cp /root/smartcmp-ansible/roles/prometheus/templates/ip_pool_metric.rules.j2 /opt/cloudchef/prometheus/rules/ip_pool_metric.rules
+cp /root/smartcmp-ansible/roles/prometheus/templates/metric.rules.j2 /opt/cloudchef/prometheus/rules/metric.rules
+cp /root/smartcmp-ansible/roles/prometheus/templates/mongodb_metric.rules.j2 /opt/cloudchef/prometheus/rules/mongodb_metric.rules
+cp /root/smartcmp-ansible/roles/prometheus/templates/mysql_metric.rules.j2 /opt/cloudchef/prometheus/rules/mysql_metric.rules
+cp /root/smartcmp-ansible/roles/prometheus/templates/nginx_metric.rules.j2 /opt/cloudchef/prometheus/rules/nginx_metric.rules
+cp /root/smartcmp-ansible/roles/prometheus/templates/elasticsearch_metric.rules.j2 /opt/cloudchef/prometheus/rules/elasticsearch_metric.rules
+cp /root/smartcmp-ansible/roles/prometheus/templates/redis_metric.rules.j2 /opt/cloudchef/prometheus/rules/redis_metric.rules
+cp /root/smartcmp-ansible/roles/prometheus/templates/resource_bundle_metric.rules.j2 /opt/cloudchef/prometheus/rules/resource_bundle_metric.rules
+
+cp -r /opt/cloudchef/prometheus/consoles /opt/cloudchef/prometheus/consoles_resource
+
+cp -r /opt/cloudchef/prometheus/console_libraries /opt/cloudchef/prometheus/console_libraries_resource
+
+chmod 775 /opt/cloudchef/prometheus/console_libraries_resource
+chmod 775 /opt/cloudchef/prometheus/consoles_resource
+chown prometheus:prometheus /opt/cloudchef/prometheus/console_libraries_resource
+chown prometheus:prometheus /opt/cloudchef/prometheus/consoles_resource
+
+chown -R prometheus:prometheus /opt/cloudchef/prometheus
+
+systemctl daemon-reload
+
+systemctl start cloudchef-prometheus
+systemctl enable cloudchef-prometheus
+
+systemctl restart cloudchef-prometheus-resource
+systemctl enable cloudchef-prometheus-resource
+
+#vmware-exporter
+firewall-cmd --zone=public --add-port=9272/tcp --permanent
+
+firewall-cmd --reload
+
+tar -zxvf /tmp/cloudchef/packages/vmware_exporter/vmware-exporter.tar.gz -C /opt/cloudchef
+chown -R cfyuser:cfyuser /opt/cloudchef/vmware-exporter
+
+mkdir /var/log/cloudchef/vmware_exporter
+chmod 755 /var/log/cloudchef/vmware_exporter
+chown cfyuser:cfyuser /var/log/cloudchef/vmware_exporter
+
+cp /root/smartcmp-ansible/roles/vmware-exporter/templates/vmware-exporter.service.j2 /usr/lib/systemd/system/cloudchef-vmware-exporter.service
+chmod 644 /usr/lib/systemd/system/cloudchef-vmware-exporter.service
+sed -i 's/{{ distribution }}/cloudchef/g;s/{{ admin_user }}/cfyuser/g;s/{{ admin_group }}/cfyuser/g' /usr/lib/systemd/system/cloudchef-vmware-exporter.service
+sed -i "s#{{ install_base_path }}#/opt/cloudchef#g" /usr/lib/systemd/system/cloudchef-vmware-exporter.service
+
+cp /root/smartcmp-ansible/roles/vmware-exporter/templates/vmware-exporter.j2 /etc/sysconfig/cloudchef-vmware-exporter
+chmod 644 /etc/sysconfig/cloudchef-vmware-exporter
+chown cfyuser:cfyuser /etc/sysconfig/cloudchef-vmware-exporter
+sed -i "s#{{ log_base_path }}#/var/log/cloudchef#g" /etc/sysconfig/cloudchef-vmware-exporter
+sed -i 's/{%if enable_ha %}{{ consul_hostname }}{% else %}127.0.0.1{% endif %}/127.0.0.1/g' /etc/sysconfig/cloudchef-vmware-exporter
+
+systemctl daemon-reload
+
+systemctl start cloudchef-vmware-exporter
+systemctl enable cloudchef-vmware-exporter
+
+cp /root/smartcmp-ansible/roles/vmware-exporter/templates/logrotate_vmware_exporter.j2 /etc/logrotate.d/vmware_exporter
+chmod 644 /etc/logrotate.d/vmware_exporter
+chown root:root /etc/logrotate.d/vmware_exporter
+
+#azure-exporter
+tar -zxvf /root/smartcmp-ansible/files/azure-exporter.tar.gz -C /opt/cloudchef
+chown -R cfyuser:cfyuser /opt/cloudchef/azure-exporter/
+
+mkdir /var/log/cloudchef/azure-exporter
+chmod 755 /var/log/cloudchef/azure-exporter
+chown cfyuser:cfyuser /var/log/cloudchef/azure-exporter
+
+cp -f /root/smartcmp-ansible/roles/azure-exporter/templates/config.json.j2 /opt/cloudchef/azure-exporter/config.json
+chmod 644 /opt/cloudchef/azure-exporter/config.json
+chown cfyuser:cfyuser /opt/cloudchef/azure-exporter/config.json
+sed -i 's/{{ cmp_domain_name }}/cmp/g' /opt/cloudchef/azure-exporter/config.json
+
+cp /root/smartcmp-ansible/roles/azure-exporter/templates/azure-exporter.service.j2 /usr/lib/systemd/system/cloudchef-azure-exporter.service
+chmod 644 /usr/lib/systemd/system/cloudchef-azure-exporter.service
+sed -i 's/{{ admin_user }}/cfyuser/g;s/{{ admin_group }}/cfyuser/g;s/{{ azure_exporter_service_name }}/cloudchef-azure-exporter/g' /usr/lib/systemd/system/cloudchef-azure-exporter.service
+sed -i "s#{{ azure_exporter_install_path }}#/opt/cloudchef/azure-exporter#g" /usr/lib/systemd/system/cloudchef-azure-exporter.service
+
+cp /root/smartcmp-ansible/roles/azure-exporter/templates/azure-exporter.j2 /etc/sysconfig/cloudchef-azure-exporter
+chmod 644 /etc/sysconfig/cloudchef-azure-exporter
+chown cfyuser:cfyuser /etc/sysconfig/cloudchef-azure-exporter
+sed -i "s#{{ azure_exporter_port }}#9373#g;s#{{ azure_exporter_log_path }}#/var/log/cloudchef/azure-exporter#g;s#{{ azure_exporter_install_path }}#/opt/cloudchef/azure-exporter#g" /etc/sysconfig/cloudchef-azure-exporter
+
+cp /root/smartcmp-ansible/roles/azure-exporter/templates/logrotate_azure_exporter.j2 /etc/logrotate.d/azure_exporter
+chmod 644 /etc/logrotate.d/azure_exporter
+chown root:root /etc/logrotate.d/azure_exporter
+sed -i "s#{{ azure_exporter_log_path }}#/var/log/cloudchef/azure-exporter#g" /etc/logrotate.d/azure_exporter
+
+#serf
+tar -zxvf /tmp/cloudchef/packages/serf/serf.tar.gz -C /opt/cloudchef
+chown cfyuser:cfyuser /opt/cloudchef/serf/
+
+chmod 755 /opt/cloudchef/serf/configs/
+chmod 755 /opt/cloudchef/serf/scripts/
+chown cfyuser:cfyuser /opt/cloudchef/serf/configs/
+chown cfyuser:cfyuser /opt/cloudchef/serf/scripts/
+
+cp -f /root/smartcmp-ansible/roles/serf/templates/enable_azure_monitor.json.j2 /opt/cloudchef/serf/configs/enable_azure_monitor.json
+cp -f /root/smartcmp-ansible/roles/serf/templates/disable_azure_monitor.json.j2 /opt/cloudchef/serf/configs/disable_azure_monitor.json
+cd /opt/cloudchef/serf/configs/
+sed -i "s#{{ serf_install_path }}#/opt/cloudchef/serf#g" *
+chmod 644 /opt/cloudchef/serf/configs/disable_azure_monitor.json
+chmod 644 /opt/cloudchef/serf/configs/enable_azure_monitor.json
+chown cfyuser:cfyuser /opt/cloudchef/serf/configs/disable_azure_monitor.json
+chown cfyuser:cfyuser /opt/cloudchef/serf/configs/enable_azure_monitor.json
+
+cp -f /root/smartcmp-ansible/roles/serf/templates/enable_azure_monitor.sh.j2 /opt/cloudchef/serf/scripts/enable_azure_monitor.sh
+cp -f /root/smartcmp-ansible/roles/serf/templates/disable_azure_monitor.sh.j2 /opt/cloudchef/serf/scripts/disable_azure_monitor.sh
+cp /opt/cloudchef/serf/scripts
+sed -i 's/{{ azure_exporter_service_name }}/cloudchef-azure-exporter/g;s/{{ consul_hostname }}/consul_node/g;s/{{ azure_exporter_port }}/9373/g;s/{{ azure_exporter_ip }}/192.168.92.16/g' *
+chmod 755 /opt/cloudchef/serf/scripts/disable_azure_monitor.sh
+chmod 755 /opt/cloudchef/serf/scripts/enable_azure_monitor.sh
+chown cfyuser:cfyuser /opt/cloudchef/serf/scripts/disable_azure_monitor.sh
+chown cfyuser:cfyuser /opt/cloudchef/serf/scripts/enable_azure_monitor.sh
+
+cp /root/smartcmp-ansible/roles/serf/templates/serf-env.j2 /etc/sysconfig/cloudchef-serf
+chmod 644 /etc/sysconfig/cloudchef-serf
+chown cfyuser:cfyuser /etc/sysconfig/cloudchef-serf
+sed -i "s#{{ serf_install_path }}#/opt/cloudchef/serf#g;s#{{ serf_port }}#9474#g" /etc/sysconfig/cloudchef-serf
+
+cp /root/smartcmp-ansible/roles/serf/templates/serf.service.j2 /usr/lib/systemd/system/cloudchef-serf.service
+chmod 644 /usr/lib/systemd/system/cloudchef-serf.service
+sed -i "s#{{ serf_service_name }}#cloudchef-serf#g;s#{{ admin_user }}#cfyuser#g;s#{{ admin_group }}#cfyuser#g;s#{{ serf_install_path }}#/opt/cloudchef/serf#g" /usr/lib/systemd/system/cloudchef-serf.service
+
+systemctl start cloudchef-serf
+systemctl enable cloudchef-serf
+
+#alertmanager
+tar -zxvf /tmp/cloudchef/packages/alertmanager/alertmanager-0.19.0.linux-amd64.tar.gz -C /opt/cloudchef
+
+mv /opt/cloudchef/alertmanager-0.19.0.linux-amd64 /opt/cloudchef/alertmanager
+
+chown -R prometheus:prometheus /opt/cloudchef/alertmanager/
+
+mkdir /data
+chmod 755 /data
+chown prometheus:prometheus /data
+
+cp -f /root/smartcmp-ansible/roles/alertmanager/templates/alertmanager.yml.j2 /opt/cloudchef/alertmanager/alertmanager.yml
+chmod 664 /opt/cloudchef/alertmanager/alertmanager.yml
+chown cfyuser:cfyuser /opt/cloudchef/alertmanager/alertmanager.yml
+sed -i 's/{%if enable_ha %}{{ cmp_domain_name }}{% else %}127.0.0.1{% endif %}/127.0.0.1/g' /opt/cloudchef/alertmanager/alertmanager.yml
+
+cp /root/smartcmp-ansible/roles/alertmanager/templates/alert.yml.j2 /opt/cloudchef/alertmanager/alert.yml
+chmod 664 /opt/cloudchef/alertmanager/alert.yml
+chown cfyuser:cfyuser /opt/cloudchef/alertmanager/alert.yml
+sed -i 's/{%if enable_ha %}{{ cmp_domain_name }}{% else %}127.0.0.1{% endif %}/127.0.0.1/g' /opt/cloudchef/alertmanager/alert.yml
+
+cp /root/smartcmp-ansible/roles/alertmanager/templates/alertmanager.service.j2 /usr/lib/systemd/system/cloudchef-alertmanager.service
+chmod 664 /usr/lib/systemd/system/cloudchef-alertmanager.service
+sed -i "s#{{ install_base_path }}#/opt/cloudchef#g" /usr/lib/systemd/system/cloudchef-alertmanager.service
+
+cp /root/smartcmp-ansible/roles/alertmanager/templates/alertmanager.j2 /etc/sysconfig/cloudchef-alertmanager
+chmod 664 /etc/sysconfig/cloudchef-alertmanager
+chown cfyuser:cfyuser /etc/sysconfig/cloudchef-alertmanager
+
+systemctl daemon-reload
+
+systemctl start cloudchef-alertmanager
+systemctl enable cloudchef-alertmanager
+
+#pushgateway
+firewall-cmd --zone=public --add-port=9091/tcp --permanent
+
+firewall-cmd --reload
+
+tar -zxvf /tmp/cloudchef/packages/pushgateway/pushgateway-1.0.0.linux-amd64.tar.gz -C /opt/cloudchef
+
+mv /opt/cloudchef/pushgateway-1.0.0.linux-amd64 /opt/cloudchef/pushgateway
+
+chown -R prometheus:prometheus /opt/cloudchef/pushgateway
+
+cp /root/smartcmp-ansible/roles/pushgateway/templates/pushgateway.service.j2 /usr/lib/systemd/system/cloudchef-pushgateway.service
+chmod 664 /usr/lib/systemd/system/cloudchef-pushgateway.service
+sed -i "s#{{ install_base_path }}#/opt/cloudchef#g" /usr/lib/systemd/system/cloudchef-pushgateway.service
+
+systemctl daemon-reload
+
+systemctl start cloudchef-pushgateway
+systemctl enable cloudchef-pushgateway
+
+#grafana
+firewall-cmd --zone=public --add-port=3000/tcp --permanent
+
+firewall-cmd --reload
+
+groupadd -g 10005 grafana
+
+useradd -u 10005 -g 10005 grafana
+
+mkdir /var/log/cloudchef/grafana
+mkdir /etc/grafana
+mkdir /etc/systemd/system/grafana-server.service.d
+chown grafana:grafana /var/log/cloudchef/grafana
+chown grafana:grafana /etc/grafana
+chown grafana:grafana /etc/systemd/system/grafana-server.service.d
+
+yum -y install /tmp/cloudchef/packages/grafana/libfontenc-1.1.3-3.el7.x86_64.rpm
+yum -y install /tmp/cloudchef/packages/grafana/libXfont-1.5.2-1.el7.x86_64.rpm
+yum -y install /tmp/cloudchef/packages/grafana/xorg-x11-font-utils-7.5-20.el7.x86_64.rpm
+yum -y install /tmp/cloudchef/packages/grafana/urw-fonts-2.4-16.el7.noarch.rpm
+yum -y install /tmp/cloudchef/packages/grafana/grafana-4.6.3-1.x86_64.rpm
+
+chown -R grafana:grafana /var/log/cloudchef/grafana
+
+ln -s /etc/cloudchef/configs/grafana/restart.conf /etc/systemd/system/grafana-server.service.d/restart.conf
+chmod 664 /etc/systemd/system/grafana-server.service.d/restart.conf
+chown -h cfyuser:cfyuser /etc/systemd/system/grafana-server.service.d/restart.conf
+
+ln -sf /etc/cloudchef/configs/grafana/grafana.ini /etc/grafana/grafana.ini
+chmod 664 /etc/grafana/grafana.ini
+chown -h grafana:grafana /etc/grafana/grafana.ini
+
+ln -s /etc/cloudchef/configs/grafana/grafana-server /etc/logrotate.d/grafana-server
+chmod 644 /etc/logrotate.d/grafana-server
+chown -h root:root /etc/logrotate.d/grafana-server
+
+sed -i 's#LOG_DIR=/var/log/grafana#LOG_DIR=/var/log/cloudchef/grafana#g' /etc/sysconfig/grafana-server
+
+echo 'PROMETHEUS_SERVER_URL="http://127.0.0.1:9090"' >> /etc/sysconfig/grafana-server
+echo 'PROMETHEUS_RESOURCE_SERVER_URL="http://127.0.0.1:9089"' >> /etc/sysconfig/grafana-server
+
+systemctl daemon-reload
+
+systemctl start grafana-server
+systemctl enable grafana-server
+
+#curl -H "Authorization: Basic YWRtaW46YWRtaW4=" -H "Content-Type: application/json" -X POST -d '{"name": "prometheus", "type": "prometheus", "url": "http://192.168.92.16:9090", "access": "proxy", "basicAuth": "false"}' http://127.0.0.1:3000/api/datasources
+#[{"classification":"DeserializationError","message":"json: cannot unmarshal string into Go struct field AddDataSourceCommand.basicAuth of type bool"}]
+
+curl -H "Authorization: Basic YWRtaW46YWRtaW4=" -H "Content-Type: application/json" -X POST -d '{"name": "prometheus", "type": "prometheus", "url": "http://192.168.92.16:9090", "access": "proxy"}' http://127.0.0.1:3000/api/datasources
+#{"id":1,"message":"Datasource added","name":"prometheus"}
+
+curl -H "Authorization: Basic YWRtaW46YWRtaW4=" -H "Content-Type: application/json" -X POST -d '{"name": "prometheus_long", "type": "prometheus", "url": "http://192.168.92.16:9089", "access": "proxy", "basicAuth": "false"}' http://127.0.0.1:3000/api/datasources
+#[{"classification":"DeserializationError","message":"json: cannot unmarshal string into Go struct field AddDataSourceCommand.basicAuth of type bool"}]
+
+curl -H "Authorization: Basic YWRtaW46YWRtaW4=" -H "Content-Type: application/json" -X POST -d '{"name": "prometheus_long", "type": "prometheus", "url": "http://192.168.92.16:9089", "access": "proxy"}' http://127.0.0.1:3000/api/datasources
+#{"id":2,"message":"Datasource added","name":"prometheus_long"}
+
+#consultemplate
+mkdir -p /opt/cloudchef/consultemplate/templates
+chmod 755 /opt/cloudchef/consultemplate/templates
+chown prometheus:prometheus /opt/cloudchef/consultemplate/templates
+
+tar -zxvf /tmp/cloudchef/packages/consul_template/consul-template_0.19.5_linux_amd64.tgz -C /opt/cloudchef/consultemplate
+
+cp /root/smartcmp-ansible/roles/consultemplate/templates/consultemplate.conf.j2 /opt/cloudchef/consultemplate/consultemplate.conf
+chmod 664 /opt/cloudchef/consultemplate/consultemplate.conf
+chown cfyuser:cfyuser /opt/cloudchef/consultemplate/consultemplate.conf
+sed -i "s#{%if enable_ha %}{{ consul_hostname }}{% else %}127.0.0.1{% endif %}#127.0.0.1#g;s#{{ install_base_path }}#/opt/cloudchef#g;s#{%if enable_ha %}{{ prometheus01_hostname }}{% else %}127.0.0.1{% endif %}#127.0.0.1#g" /opt/cloudchef/consultemplate/consultemplate.conf
+
+cp /root/smartcmp-ansible/roles/consultemplate/templates/alert.ctmpl.j2 /opt/cloudchef/consultemplate/templates/alert.ctmpl
+chmod 664 /opt/cloudchef/consultemplate/templates/alert.ctmpl
+chown cfyuser:cfyuser /opt/cloudchef/consultemplate/templates/alert.ctmpl
+
+cp /root/smartcmp-ansible/roles/consultemplate/templates/alertmanager.ctmpl.j2 /opt/cloudchef/consultemplate/templates/alertmanager.ctmpl
+chmod 664 /opt/cloudchef/consultemplate/templates/alertmanager.ctmpl
+chown cfyuser:cfyuser /opt/cloudchef/consultemplate/templates/alertmanager.ctmpl
+
+cp /root/smartcmp-ansible/roles/consultemplate/templates/prometheus-kubernetes-node-monitor.ctmpl.j2 /opt/cloudchef/consultemplate/templates/prometheus-kubernetes-node-monitor.ctmpl
+chmod 664 /opt/cloudchef/consultemplate/templates/prometheus-kubernetes-node-monitor.ctmpl
+chown cfyuser:cfyuser /opt/cloudchef/consultemplate/templates/prometheus-kubernetes-node-monitor.ctmpl
+
+cp /root/smartcmp-ansible/roles/consultemplate/templates/consultemplate.service.j2 /usr/lib/systemd/system/cloudchef-consultemplate.service
+chmod 664 /usr/lib/systemd/system/cloudchef-consultemplate.service
+sed -i "s#{{ prometheus_service_user }}#prometheus#g;s#{{ install_base_path }}#/opt/cloudchef#g" /usr/lib/systemd/system/cloudchef-consultemplate.service
+
+cp /root/smartcmp-ansible/roles/consultemplate/templates/consultemplate.j2 /etc/sysconfig/cloudchef-consultemplate
+chmod 664 /etc/sysconfig/cloudchef-consultemplate
+chown cfyuser:cfyuser /etc/sysconfig/cloudchef-consultemplate
+
+cp /root/smartcmp-ansible/roles/consultemplate/templates/rules.rules.j2 /opt/cloudchef/prometheus/rules/rules.rules
+chmod 664 /opt/cloudchef/prometheus/rules/rules.rules
+chown prometheus:prometheus /opt/cloudchef/prometheus/rules/rules.rules
+
+curl --request PUT --data-binary @/opt/cloudchef/alertmanager/alert.yml 'http://127.0.0.1:8500/v1/kv/alertmanager/config'
+
+curl --request PUT --data-binary @/opt/cloudchef/prometheus/rules/rules.rules 'http://127.0.0.1:8500/v1/kv/prometheus/rules/alert'
+
+systemctl daemon-reload
+
+systemctl start cloudchef-consultemplate
+systemctl enable cloudchef-consultemplate
+
+#logstash
+mkdir /etc/systemd/system/logstash.service.d
+mkdir -p /opt/cloudchef-instances/logstash/resources
+
+groupadd -g 10006 logstash
+
+useradd -u 10006 -g 10006 logstash
+
+yum -y install /tmp/cloudchef/packages/logstash/logstash-1.5.4-1.noarch.rpm
+
+cp "/tmp/cloudchef/packages/logstash/logstash-filter-json_encode-0.1.5.gem" /opt/cloudchef-instances/logstash/resources
+cp "/tmp/cloudchef/packages/logstash/logstash-output-jdbc-0.2.10.gem" /opt/cloudchef-instances/logstash/resources
+
+
+su - logstash -c "sh -c export JRUBY_OPTS=-J-Djava.security.egd=file:/dev/urandom; /opt/logstash/bin/plugin install /opt/cloudchef-instances/logstash/resources/logstash-filter-json_encode-0.1.5.gem"
+
+su - logstash -c "sh -c export JRUBY_OPTS=-J-Djava.security.egd=file:/dev/urandom; /opt/logstash/bin/plugin install /opt/cloudchef-instances/logstash/resources/logstash-output-jdbc-0.2.10.gem"
+
+mkdir /opt/logstash/vendor/jar/
+mkdir /opt/logstash/vendor/jar/jdbc
+mkdir /var/log/cloudchef/logstash
+chown logstash:logstash /opt/logstash/vendor/jar/
+chown logstash:logstash /opt/logstash/vendor/jar/jdbc
+chown logstash:logstash /var/log/cloudchef/logstash
+
+cp "/tmp/cloudchef/packages/logstash/mysql-connector-java-8.0.16.jar" /opt/logstash/vendor/jar/jdbc/
+
+chown logstash:logstash /opt/logstash/vendor/jar/jdbc/mysql-connector-java-8.0.16.jar
+
+ln -s /etc/cloudchef/configs/logstash/restart.conf /etc/systemd/system/logstash.service.d/restart.conf
+ln -s /etc/cloudchef/configs/logstash/logstash.conf /etc/logstash/conf.d/logstash.conf
+chmod 664 /etc/systemd/system/logstash.service.d/restart.conf
+chmod 664 /etc/logstash/conf.d/logstash.conf
+chown -h logstash:logstash /etc/systemd/system/logstash.service.d/restart.conf
+chown -h logstash:logstash /etc/logstash/conf.d/logstash.conf
+
+sed -i "s#/etc/sysconfig/$name#/etc/sysconfig/cloudchef-$name#g" /etc/init.d/logstash
+
+ln -s /etc/cloudchef/configs/logstash/cloudchef-logstash /etc/sysconfig/cloudchef-logstash
+chmod 664 /etc/sysconfig/cloudchef-logstash
+chown -h logstash:logstash /etc/sysconfig/cloudchef-logstash
+
+ln -sf /etc/cloudchef/configs/logstash/logstash /etc/logrotate.d/logstash
+chmod 644 /etc/logrotate.d/logstash
+chown root:root /etc/logrotate.d/logstash
+
+ln -s /etc/cloudchef/configs/logstash/logstash_heartbeat /etc/cron.hourly/logstash_heartbeat
+chmod 755 /etc/cron.hourly/logstash_heartbeat
+chown logstash:logstash /etc/cron.hourly/logstash_heartbeat
+
+echo '\n* * * * * root /etc/cron.hourly/logstash_heartbeat' >> /etc/crontab
+
+systemctl start logstash
+chkconfig --add logstash
+
+#restservice
+firewall-cmd --zone=public --add-port=53229/tcp --permanent
+firewall-cmd --zone=public --add-port=53333/tcp --permanent
+
+firewall-cmd --reload
+
+mkdir /opt/manager/resources/cloudify_agent
+mkdir /var/log/cloudchef/rest
+chown cfyuser:cfyuser /opt/manager/resources/cloudify_agent
+chown cfyuser:cfyuser /var/log/cloudchef/rest
+chmod 755 /opt/manager/resources/cloudify_agent
+chmod 755 /var/log/cloudchef/rest
+
+yum -y install /tmp/cloudchef/packages/restservice/cloudify-rest-service-4.0.1-sp.x86_64.rpm
+
+ln -s /usr/lib64/python2.7/site-packages/dbus /opt/manager/env/lib64/python2.7/site-packages/dbus
+ln -s /usr/lib64/python2.7/site-packages/_dbus_bindings.so /opt/manager/env/lib64/python2.7/site-packages/dbus/_dbus_bindings.so
+ln -s /usr/lib64/python2.7/site-packages/_dbus_glib_bindings.so /opt/manager/env/lib64/python2.7/site-packages/_dbus_glib_bindings.so
+
+ln -s /etc/cloudchef/configs/restservice/restservice /etc/logrotate.d/restservice
+chmod 644 /etc/logrotate.d/restservice
+chown root:root /etc/logrotate.d/restservice
+
+cp /root/smartcmp-ansible/roles/restservice/templates/restservice.conf.j2 /usr/lib/tmpfiles.d/cloudchef-restservice.conf
+chown cfyuser:cfyuser /usr/lib/tmpfiles.d/cloudchef-restservice.conf
+sed -i 's/{{ distribution }}/cloudchef/g;s/{{ admin_user }}/cfyuser/g;s/{{ admin_group }}/cfyuser/g' /usr/lib/tmpfiles.d/cloudchef-restservice.conf
+
+ln -s /etc/cloudchef/configs/restservice/cloudchef-rest.conf /opt/manager/cloudchef-rest.conf
+chown -h cfyuser:cfyuser /opt/manager/cloudchef-rest.conf
+chmod 664 /opt/manager/cloudchef-rest.conf
+
+mkdir /opt/manager/resources/packages/scripts/ansible
+mkdir /opt/manager/resources/blueprints
+mkdir /opt/manager/resources/deployments
+mkdir /opt/manager/resources/uploaded-blueprints
+mkdir /opt/manager/resources/snapshots
+mkdir /opt/manager/resources/plugins
+chmod 755 /opt/manager/resources/packages/scripts/ansible
+chmod 755 /opt/manager/resources/blueprints
+chmod 755 /opt/manager/resources/deployments
+chmod 755 /opt/manager/resources/uploaded-blueprints
+chmod 755 /opt/manager/resources/snapshots
+chmod 755 /opt/manager/resources/plugins
+chown cfyuser:cfyuser /opt/manager/resources/packages/scripts/ansible
+chown cfyuser:cfyuser /opt/manager/resources/blueprints
+chown cfyuser:cfyuser /opt/manager/resources/deployments
+chown cfyuser:cfyuser /opt/manager/resources/uploaded-blueprints
+chown cfyuser:cfyuser /opt/manager/resources/snapshots
+chown cfyuser:cfyuser /opt/manager/resources/plugins
+
+ln -s /etc/cloudchef/configs/restservice/rest-security.conf /opt/manager/rest-security.conf
+chown -h cfyuser:cfyuser /opt/manager/rest-security.conf
+#chmod 600 /opt/manager/rest-security.conf
+chmod 644 /opt/manager/rest-security.conf
+
+cp /root/smartcmp-ansible/roles/restservice/templates/restservice.service.j2 /usr/lib/systemd/system/cloudchef-restservice.service
+sed -i "s#{{ admin_user }}#cfyuser#g;s#{{ admin_group }}#cfyuser#g;s#{{ distribution }}#cloudchef#g;s#{{ log_base_path }}#/var/log/cloudchef#g" /usr/lib/systemd/system/cloudchef-restservice.service
+
+ln -s /etc/cloudchef/configs/restservice/cloudchef-restservice /etc/sysconfig/cloudchef-restservice
+chown -h cfyuser:cfyuser /etc/sysconfig/cloudchef-restservice
+chmod 664 /etc/sysconfig/cloudchef-restservice
+
+systemd-tmpfiles --create
+
+systemctl daemon-reload
+
+mkdir /tmp/cloudchef/script
+ln -s /etc/cloudchef/configs/restservice/db.py /tmp/cloudchef/script/db.py
+ln -s /etc/cloudchef/configs/restservice/db_args.json /tmp/cloudchef/script/db_args.json
+
+cp -f /root/smartcmp-ansible/roles/restservice/templates/9aa6f74c9653_4_0_1.py.j2  /opt/manager/resources/cloudify/migrations/versions/9aa6f74c9653_4_0_1.py
+
+cp /root/smartcmp-ansible/roles/restservice/files/8651c0df8dc8_gateway_version.py /opt/manager/resources/cloudify/migrations/versions/8651c0df8dc8_gateway_version.py
+
+/opt/manager/env/bin/python "/tmp/cloudchef/script/db.py"  "/tmp/cloudchef/script/db_args.json"
+#Setting up a Flask app
+#Creating tables in the DB
+#Creating bootstrap admin, default tenant and security roles
+
+mysql -ucloudchef -pc10udch3f SmartCMP_Orchestrator -e "CREATE UNIQUE INDEX index_tenant_id_and_instance_id ON node_instances (_tenant_id,id);"
+
+systemctl start cloudchef-restservice
+systemctl enable cloudchef-restservice
+
+cp /root/smartcmp-ansible/roles/restservice/templates/provider_context.json.j2 /tmp/cloudchef/script/provider_context.json
+cp /root/smartcmp-ansible/roles/restservice/templates/create_provider_context.sh.j2 /tmp/cloudchef/script/create_provider_context.sh
+sed -i 's/{{ rabbitmq_public_ip }}/192.168.92.16/g;s/{{ rabbitmq_username }}/cloudchef/g;s/{{ rabbitmq_password }}/c10udch3f/g;s/{{ agent_ssl_enabled | lower}}/true/g' /tmp/cloudchef/script/provider_context.json
+sed -i "s#{{ cfyadmin_username }}#admin#g;s#{{ cfyadmin_password }}#admin#g;s#{{ script_path }}#/tmp/cloudchef/script/#g;s#{{ public_ip }}#192.168.92.16#g" /tmp/cloudchef/script/create_provider_context.sh
+
+/bin/bash /tmp/cloudchef/script/create_provider_context.sh
+#{"status": "ok"}
+
+cfy profiles use "192.168.92.16" --profile-name "192.168.92.16" -s cfyuser -k /home/cfyuser/.ssh/id_rsa --ssh-port 22 -u "admin" -p "admin" -t default_tenant
+#Attempting to connect...
+#Initializing profile 192.168.92.16...
+#Initialization completed successfully
+#Using manager 192.168.92.16 with port 80
+
+#mgmtworker
+mkdir -p /opt/mgmtworker/config
+mkdir /opt/mgmtworker/work
+mkdir /var/log/cloudchef/mgmtworker
+chmod 755 /opt/mgmtworker/config
+chmod 755 /opt/mgmtworker/work
+chmod 755 /var/log/cloudchef/mgmtworker
+chown cfyuser:cfyuser /opt/mgmtworker/config
+chown cfyuser:cfyuser /opt/mgmtworker/work
+chown cfyuser:cfyuser /var/log/cloudchef/mgmtworker
+
+yum -y install /tmp/cloudchef/packages/mgmtworker/cloudify-management-worker-4.0.1-sp.x86_64.rpm
+
+ln -s /etc/cloudchef/configs/mgmtworker/broker_config.json /opt/mgmtworker/work/broker_config.json
+chmod 644 /opt/mgmtworker/work/broker_config.json
+chown -h cfyuser:cfyuser /opt/mgmtworker/work/broker_config.json
+
+cp /root/smartcmp-ansible/roles/mgmtworker/templates/mgmtworker.service.j2 /usr/lib/systemd/system/cloudchef-mgmtworker.service
+chmod 664 /usr/lib/systemd/system/cloudchef-mgmtworker.service
+sed -i 's/{{ distribution }}/cloudchef/g;s/{{ admin_user }}/cfyuser/g;s/{{ admin_group }}/cfyuser/g' /usr/lib/systemd/system/cloudchef-mgmtworker.service
+
+ln -s /etc/cloudchef/configs/mgmtworker/cloudchef-mgmtworker /etc/sysconfig/cloudchef-mgmtworker
+chmod 644 /etc/sysconfig/cloudchef-mgmtworker
+chown -h cfyuser:cfyuser /etc/sysconfig/cloudchef-mgmtworker
+
+systemctl daemon-reload
+
+ln -s /etc/cloudchef/configs/mgmtworker/mgmtworker /etc/logrotate.d/mgmtworker
+chmod 644 /etc/logrotate.d/mgmtworker
+chown -h root:root /etc/logrotate.d/mgmtworker
+
+ln -s /etc/cloudchef/configs/mgmtworker/logging.conf /opt/mgmtworker/config/logging.conf
+chmod 644 /opt/mgmtworker/config/logging.conf
+chown -h cfyuser:cfyuser /opt/mgmtworker/config/logging.conf
+
+mkdir /opt/mgmtworker/env/plugins
+chmod 755 /opt/mgmtworker/env/plugins
+chown cfyuser:cfyuser /opt/mgmtworker/env/plugins
+
+chmod 775 /opt/manager
+chown cfyuser:cfyuser /opt/manager
+
+systemctl start cloudchef-mgmtworker
+systemctl enable cloudchef-mgmtworker
+
+cd /root/smartcmp-ansible/files/
+tar -zxvf  post-run.tar.gz -C /var/cc
+
+cd /var/cc/post-run;python post-update-tool.py -gfmr
+#1. updating yaml file
+#2. updating grafana files
+#[PROMETHEUS_SERVER_URL]: http://127.0.0.1:9090
+#[PROMETHEUS_RESOURCE_SERVER_URL]: http://127.0.0.1:9089
+#Configuring Grafana Server, update prometheus datastore (prometheus)
+#Configuring Grafana Server, update prometheus datastore (prometheus_long)
+#Restarting grafana-server (via systemctl):  [  OK  ]
+#3. updating script files
+#4. updating prometheus exporter's installation script
+#5. updating vmware exporter
+#6. updating scmp-tools
+#updating mgmtwork service
+#Redirecting to /bin/systemctl stop  cloudchef-mgmtworker.service
+#Redirecting to /bin/systemctl start  cloudchef-mgmtworker.service
+#updating rest service
+#Redirecting to /bin/systemctl stop  cloudchef-restservice.service
+#Redirecting to /bin/systemctl start  cloudchef-restservice.service
+
+cd /root/smartcmp-ansible/files/
+tar -zxvf plugins.tar.gz -C /var/cc
+
+chown -R cfyuser:cfyuser /opt/mgmtworker/env/plugins
+
+cd /var/cc/plugins;python upload-plugin-tool.py -u "fabric,vsphere-2.1,openstack,ansible,aliyun,aws,docker,f5,aci,physical,powervc,qingcloud,exporter,kubernetes,nsx,azure,sdx,host_pool,hyperv,abstract" > /dev/null
+
+#celery-monitor
+mkdir -p /opt/cloudchef/celery-monitor/env
+
+virtualenv --no-download /opt/cloudchef/celery-monitor/env
+#New python executable in /opt/cloudchef/celery-monitor/env/bin/python2
+#Also creating executable in /opt/cloudchef/celery-monitor/env/bin/python
+#Installing setuptools, pip, wheel...done.
+
+/opt/cloudchef/celery-monitor/env/bin/pip install flower --no-index --find-links=/tmp/cloudchef/packages/celery-monitor//wheels
+#Ignoring indexes: https://pypi.python.org/simple
+#Collecting flower
+#Collecting babel<3.0.0,>=1.0 (from flower)
+#Collecting tornado<6.0.0,>=4.2.0 (from flower)
+#Collecting pytz (from flower)
+#Collecting futures (from flower)
+#Collecting celery>=3.1.0 (from flower)
+#Collecting backports-abc>=0.4 (from tornado<6.0.0,>=4.2.0->flower)
+#Collecting singledispatch (from tornado<6.0.0,>=4.2.0->flower)
+#Collecting kombu<4.7,>=4.6.7 (from celery>=3.1.0->flower)
+#Collecting billiard<4.0,>=3.6.1 (from celery>=3.1.0->flower)
+#Collecting vine==1.3.0 (from celery>=3.1.0->flower)
+#Collecting six (from singledispatch->tornado<6.0.0,>=4.2.0->flower)
+#Collecting importlib-metadata>=0.18 (from kombu<4.7,>=4.6.7->celery>=3.1.0->flower)
+#Collecting amqp<2.6,>=2.5.2 (from kombu<4.7,>=4.6.7->celery>=3.1.0->flower)
+#Collecting zipp>=0.5 (from importlib-metadata>=0.18->kombu<4.7,>=4.6.7->celery>=3.1.0->flower)
+#Collecting configparser>=3.5 (from importlib-metadata>=0.18->kombu<4.7,>=4.6.7->celery>=3.1.0->flower)
+#Collecting contextlib2 (from importlib-metadata>=0.18->kombu<4.7,>=4.6.7->celery>=3.1.0->flower)
+#Collecting pathlib2 (from importlib-metadata>=0.18->kombu<4.7,>=4.6.7->celery>=3.1.0->flower)
+#Collecting more-itertools (from zipp>=0.5->importlib-metadata>=0.18->kombu<4.7,>=4.6.7->celery>=3.1.0->flower)
+#Collecting scandir (from pathlib2->importlib-metadata>=0.18->kombu<4.7,>=4.6.7->celery>=3.1.0->flower)
+#Installing collected packages: pytz, babel, futures, backports-abc, six, singledispatch, tornado, more-itertools, zipp, configparser, contextlib2, scandir, pathlib2, importlib-metadata, vine, amqp, kombu, billiard, celery, flower
+#Successfully installed amqp-2.5.2 babel-2.8.0 backports-abc-0.5 billiard-3.6.1.0 celery-4.4.0 configparser-4.0.2 contextlib2-0.6.0.post1 flower-0.9.3 futures-3.3.0 importlib-metadata-1.3.0 kombu-4.6.7 more-itertools-5.0.0 pathlib2-2.3.5 pytz-2019.3 scandir-1.10.0 singledispatch-3.4.0.3 six-1.13.0 tornado-5.1.1 vine-1.3.0 zipp-0.6.0
+
+chown cfyuser:cfyuser /opt/cloudchef/celery-monitor/env
+
+cp /root/smartcmp-ansible/roles/celery-monitor/templates/celery-monitor.service.j2 /usr/lib/systemd/system/celery-monitor.service
+chmod 664 /usr/lib/systemd/system/celery-monitor.service
+sed -i "s#{{ distribution }}#cloudchef#g;s#{{ admin_user }}#cfyuser#g;s#{{ admin_group }}#cfyuser#g;s#{{ install_base_path }}#/opt/cloudchef#g" /usr/lib/systemd/system/celery-monitor.service
+
+ln -s /etc/cloudchef/configs/mgmtworker/celery-monitor-env /etc/sysconfig/celery-monitor-env
+#chmod 755 /etc/sysconfig/celery-monitor-env
+chown -h cfyuser:cfyuser /etc/sysconfig/celery-monitor-env
+
+sed -i 's/events_enable_interval = 5000/events_enable_interval = 60000/' /opt/cloudchef/celery-monitor/env/lib/python2.7/site-packages/flower/events.py
+
+systemctl start celery-monitor
+systemctl enable celery-monitor
+
+#integration
+mkdir -p /opt/cloudchef/integration/config
+mkdir /var/log/cloudchef/integration
+chown cfyuser:cfyuser /opt/cloudchef/integration/config
+chown cfyuser:cfyuser /var/log/cloudchef/integration
+
+cd /root/smartcmp-ansible/files/
+tar -zxvf cloudchef-integration.tar.gz -C /opt/cloudchef/integration
+
+virtualenv --no-download /opt/cloudchef/integration/env
+#New python executable in /opt/cloudchef/integration/env/bin/python2
+#Also creating executable in /opt/cloudchef/integration/env/bin/python
+#Installing setuptools, pip, wheel...done.
+
+cd /opt/cloudchef/integration/deploy
+source /opt/cloudchef/integration/env/bin/activate;pip install  --force-reinstall --upgrade pip --no-index --find-links wheelhouse
+#Ignoring indexes: https://pypi.python.org/simple
+#Collecting pip
+#Installing collected packages: pip
+#  Found existing installation: pip 8.0.2
+#    Uninstalling pip-8.0.2:
+#      Successfully uninstalled pip-8.0.2
+#Successfully installed pip-9.0.1
+#(env)
+source /opt/cloudchef/integration/env/bin/activate;pip install cloudchef_integration --no-index --find-links wheelhouse
+#Collecting cloudchef_integration
+#Installing collected packages: cloudchef-integration
+#Successfully installed cloudchef-integration-0.1.0
+#(env)
+source /opt/cloudchef/integration/env/bin/activate;pip install -r requirements.txt --no-index --find-links wheelhouse
+#Requirement already satisfied: pip==9.0.1 in /opt/cloudchef/integration/env/lib/python2.7/site-packages (from -r requirements.txt (line 1))
+#Collecting PyMySQL==0.8.0 (from -r requirements.txt (line 2))
+#Collecting SQLAlchemy==1.2.2 (from -r requirements.txt (line 3))
+#Collecting keystoneauth1==3.12.0 (from -r requirements.txt (line 4))
+#Collecting python-novaclient==12.0.0 (from -r requirements.txt (line 5))
+#Collecting pyvim==2.0.24 (from -r requirements.txt (line 6))
+#Collecting pyvmomi==6.7.1.2018.12 (from -r requirements.txt (line 7))
+#CCollecting azure-mgmt-sql==0.9.1 (from -r requirements.txt (line 9))
+#Collecting azure-mgmt-rdbms==1.7.1 (from -r requirements.txt (line 10))
+#Collecting pywinrm==0.3.0 (from -r requirements.txt (line 11))
+#Collecting pycrypto==2.6.1 (from -r requirements.txt (line 12))
+#Collecting pyOpenSSL==19.0.0 (from -r requirements.txt (line 13))
+#Collecting kombu==4.1.0 (from -r requirements.txt (line 14))
+#Collecting ksc-sdk-python==1.3.14 (from -r requirements.txt (line 15))
+#Collecting ansible==2.8.5 (from -r requirements.txt (line 16))
+#Collecting Fabric==1.13.1 (from -r requirements.txt (line 17))
+#Requirement already satisfied: setuptools<=44.0.0 in /opt/cloudchef/integration/env/lib/python2.7/site-packages (from -r requirements.txt (line 18))
+#Collecting more-itertools<=7.2.0 (from -r requirements.txt (line 19))
+#Collecting python-ipmi==0.4.1 (from -r requirements.txt (line 20))
+#Collecting flask-restful==0.3.7 (from -r requirements.txt (line 21))
+#Collecting adal==1.2.2 (from -r requirements.txt (line 22))
+#Collecting amqp==2.5.2 (from -r requirements.txt (line 23))
+#Collecting aniso8601==8.0.0 (from -r requirements.txt (line 24))
+#Collecting azure-mgmt-nspkg==3.0.2 (from -r requirements.txt (line 25))
+#Collecting azure-nspkg==3.0.2 (from -r requirements.txt (line 26))
+#Collecting Babel==2.8.0 (from -r requirements.txt (line 27))
+#Collecting bcrypt==3.1.7 (from -r requirements.txt (line 28))
+#Collecting billiard==3.5.0.5 (from -r requirements.txt (line 29))
+#Collecting celery==4.1.0 (from -r requirements.txt (line 30))
+#Collecting certifi==2019.11.28 (from -r requirements.txt (line 31))
+#Collecting cffi==1.13.2 (from -r requirements.txt (line 32))
+#Collecting chardet==3.0.4 (from -r requirements.txt (line 33))
+#Collecting Click==7.0 (from -r requirements.txt (line 34))
+#Collecting configparser==4.0.2 (from -r requirements.txt (line 35))
+#Collecting contextlib2==0.6.0.post1 (from -r requirements.txt (line 36))
+#Collecting cryptography==2.8 (from -r requirements.txt (line 37))
+#Collecting debtcollector==1.22.0 (from -r requirements.txt (line 38))
+#Collecting docopt==0.6.2 (from -r requirements.txt (line 39))
+#Collecting docutils==0.16 (from -r requirements.txt (line 40))
+#Collecting enum34==1.1.6 (from -r requirements.txt (line 41))
+#Collecting Flask==0.12.2 (from -r requirements.txt (line 42))
+#Collecting funcsigs==1.0.2 (from -r requirements.txt (line 43))
+#Collecting future==0.18.2 (from -r requirements.txt (line 44))
+#Collecting gunicorn==19.7.1 (from -r requirements.txt (line 45))
+#Collecting idna==2.8 (from -r requirements.txt (line 46))
+#Collecting importlib-metadata==1.4.0 (from -r requirements.txt (line 47))
+#Collecting ipaddress==1.0.23 (from -r requirements.txt (line 48))
+#Collecting iso8601==0.1.12 (from -r requirements.txt (line 49))
+#Collecting isodate==0.6.0 (from -r requirements.txt (line 50))
+#Collecting itsdangerous==1.1.0 (from -r requirements.txt (line 51))
+#Collecting Jinja2==2.10.3 (from -r requirements.txt (line 52))
+#Collecting jmespath==0.9.4 (from -r requirements.txt (line 53))
+#Collecting Markdown==3.1.1 (from -r requirements.txt (line 54))
+#Collecting MarkupSafe==1.1.1 (from -r requirements.txt (line 55))
+#Collecting monotonic==1.5 (from -r requirements.txt (line 56))
+#Collecting msgpack==0.6.2 (from -r requirements.txt (line 57))
+#Collecting msrest==0.6.10 (from -r requirements.txt (line 58))
+#Collecting msrestazure==0.6.2 (from -r requirements.txt (line 59))
+#Collecting netaddr==0.7.19 (from -r requirements.txt (line 60))
+#Collecting netifaces==0.10.9 (from -r requirements.txt (line 61))
+#Collecting ntlm-auth==1.4.0 (from -r requirements.txt (line 62))
+#Collecting oauthlib==3.1.0 (from -r requirements.txt (line 63))
+#Collecting oslo.i18n==3.25.1 (from -r requirements.txt (line 64))
+#Collecting oslo.serialization==2.29.2 (from -r requirements.txt (line 65))
+#Collecting oslo.utils==3.42.1 (from -r requirements.txt (line 66))
+#Collecting os-service-types==1.7.0 (from -r requirements.txt (line 67))
+#Collecting paramiko==2.7.1 (from -r requirements.txt (line 68))
+#Collecting pathlib2==2.3.5 (from -r requirements.txt (line 69))
+#Collecting pbr==5.4.4 (from -r requirements.txt (line 70))
+#Collecting prettytable==0.7.2 (from -r requirements.txt (line 71))
+#Collecting prompt-toolkit==2.0.10 (from -r requirements.txt (line 72))
+#Collecting pycparser==2.19 (from -r requirements.txt (line 73))
+#Collecting pyflakes==2.1.1 (from -r requirements.txt (line 74))
+#Collecting Pygments==2.5.2 (from -r requirements.txt (line 75))
+#Collecting PyJWT==1.7.1 (from -r requirements.txt (line 76))
+#Collecting PyNaCl==1.3.0 (from -r requirements.txt (line 77))
+#Collecting pyparsing==2.4.6 (from -r requirements.txt (line 78))
+#Collecting python-dateutil==2.8.1 (from -r requirements.txt (line 79))
+#Collecting pytz==2019.3 (from -r requirements.txt (line 80))
+#ollecting PyYAML<=5.3 (from -r requirements.txt (line 81))
+#Collecting requests==2.22.0 (from -r requirements.txt (line 82))
+#Collecting requests-ntlm==1.1.0 (from -r requirements.txt (line 83))
+#ollecting requests-oauthlib==1.3.0 (from -r requirements.txt (line 84))
+#Collecting scandir==1.10.0 (from -r requirements.txt (line 85))
+#Collecting simplejson==3.17.0 (from -r requirements.txt (line 86))
+#Collecting six==1.14.0 (from -r requirements.txt (line 87))
+#Collecting stevedore==1.31.0 (from -r requirements.txt (line 88))
+#Collecting tencentcloud-sdk-python==3.0.111 (from -r requirements.txt (line 89))
+#Collecting typing==3.7.4.1 (from -r requirements.txt (line 90))
+#Collecting urllib3==1.25.7 (from -r requirements.txt (line 91))
+#Collecting vine==1.3.0 (from -r requirements.txt (line 92))
+#Collecting wcwidth==0.1.8 (from -r requirements.txt (line 93))
+#Collecting Werkzeug==0.16.0 (from -r requirements.txt (line 94))
+#Collecting wrapt==1.11.2 (from -r requirements.txt (line 95))
+#Collecting xmltodict==0.12.0 (from -r requirements.txt (line 96))
+#Collecting zipp==1.0.0 (from -r requirements.txt (line 97))
+#Collecting google-api-python-client==1.8.0 (from -r requirements.txt (line 98))
+#Collecting cachetools==3.1.1 (from -r requirements.txt (line 99))
+#Collecting oauth2client==4.1.3 (from -r requirements.txt (line 100))
+#Collecting rsa==3.1.4 (from -r requirements.txt (line 101))
+#Collecting pyasn1<=0.4.8 (from -r requirements.txt (line 102))
+#Collecting pyasn1_modules<=0.2.8 (from -r requirements.txt (line 103))
+#Collecting httplib2<=0.18.1 (from -r requirements.txt (line 104))
+#Collecting uritemplate<4dev,>=3.0.0 (from google-api-python-client==1.8.0->-r requirements.txt (line 98))
+#Collecting google-auth>=1.4.1 (from google-api-python-client==1.8.0->-r requirements.txt (line 98))
+#Collecting google-api-core<2dev,>=1.13.0 (from google-api-python-client==1.8.0->-r requirements.txt (line 98))
+#Collecting google-auth-httplib2>=0.0.3 (from google-api-python-client==1.8.0->-r requirements.txt (line 98))
+#Collecting protobuf>=3.4.0 (from google-api-core<2dev,>=1.13.0->google-api-python-client==1.8.0->-r requirements.txt (line 98))
+#Collecting googleapis-common-protos<2.0dev,>=1.6.0 (from google-api-core<2dev,>=1.13.0->google-api-python-client==1.8.0->-r requirements.txt (line 98))
+#Collecting futures>=3.2.0; python_version < "3.2" (from google-api-core<2dev,>=1.13.0->google-api-python-client==1.8.0->-r requirements.txt (line 98))
+#Installing collected packages: PyMySQL, SQLAlchemy, iso8601, chardet, idna, urllib3, certifi, requests, six, pbr, os-service-types, stevedore, keystoneauth1, pytz, Babel, oslo.i18n, netifaces, pyparsing, funcsigs, netaddr, monotonic, wrapt, debtcollector, oslo.utils, PyYAML, msgpack, oslo.serialization, prettytable, simplejson, python-novaclient, wcwidth, prompt-toolkit, Pygments, docopt, pyflakes, pyvim, pyvmomi, azure-nspkg, azure-common, oauthlib, requests-oauthlib, enum34, typing, isodate, #msrest, pycparser, cffi, ipaddress, cryptography, PyJWT, python-dateutil, adal, msrestazure, azure-mgmt-nspkg, azure-mgmt-sql, azure-mgmt-rdbms, xmltodict, ntlm-auth, requests-ntlm, pywinrm, pycrypto, pyOpenSSL, vine, amqp, kombu, jmespath, docutils, ksc-sdk-python, MarkupSafe, Jinja2, ansible, PyNaCl, bcrypt, paramiko, Fabric, more-itertools, Markdown, future, python-ipmi, itsdangerous, Click, Werkzeug, Flask, aniso8601, flask-restful, billiard, celery, configparser, contextlib2, gunicorn, #zipp, scandir, pathlib2, importlib-metadata, tencentcloud-sdk-python, uritemplate, pyasn1, pyasn1-modules, rsa, cachetools, google-auth, protobuf, googleapis-common-protos, futures, google-api-core, httplib2, google-auth-httplib2, google-api-python-client, oauth2client
+#Successfully installed Babel-2.8.0 Click-7.0 Fabric-1.13.1 Flask-0.12.2 Jinja2-2.10.3 Markdown-3.1.1 MarkupSafe-1.1.1 PyJWT-1.7.1 PyMySQL-0.8.0 PyNaCl-1.3.0 PyYAML-5.3 Pygments-2.5.2 SQLAlchemy-1.2.2 Werkzeug-0.16.0 adal-1.2.2 amqp-2.5.2 aniso8601-8.0.0 ansible-2.8.5 azure-common-1.1.18 azure-mgmt-nspkg-3.0.2 azure-mgmt-rdbms-1.7.1 azure-mgmt-sql-0.9.1 azure-nspkg-3.0.2 bcrypt-3.1.7 billiard-3.5.0.5 cachetools-3.1.1 celery-4.1.0 certifi-2019.11.28 cffi-1.13.2 chardet-3.0.4 configparser-4.0.2 #contextlib2-0.6.0.post1 cryptography-2.8 debtcollector-1.22.0 docopt-0.6.2 docutils-0.16 enum34-1.1.6 flask-restful-0.3.7 funcsigs-1.0.2 future-0.18.2 futures-3.3.0 google-api-core-1.20.0 google-api-python-client-1.8.0 google-auth-1.17.2 google-auth-httplib2-0.0.3 googleapis-common-protos-1.52.0 gunicorn-19.7.1 httplib2-0.18.1 idna-2.8 importlib-metadata-1.4.0 ipaddress-1.0.23 iso8601-0.1.12 isodate-0.6.0 itsdangerous-1.1.0 jmespath-0.9.4 keystoneauth1-3.12.0 kombu-4.1.0 ksc-sdk-python-1.3.14 #monotonic-1.5 more-itertools-7.2.0 msgpack-0.6.2 msrest-0.6.10 msrestazure-0.6.2 netaddr-0.7.19 netifaces-0.10.9 ntlm-auth-1.4.0 oauth2client-4.1.3 oauthlib-3.1.0 os-service-types-1.7.0 oslo.i18n-3.25.1 oslo.serialization-2.29.2 oslo.utils-3.42.1 paramiko-2.7.1 pathlib2-2.3.5 pbr-5.4.4 prettytable-0.7.2 prompt-toolkit-2.0.10 protobuf-3.12.2 pyOpenSSL-19.0.0 pyasn1-0.4.8 pyasn1-modules-0.2.8 pycparser-2.19 pycrypto-2.6.1 pyflakes-2.1.1 pyparsing-2.4.6 python-dateutil-2.8.1 python-ipmi-0.4.1 #python-novaclient-12.0.0 pytz-2019.3 pyvim-2.0.24 pyvmomi-6.7.1.2018.12 pywinrm-0.3.0 requests-2.22.0 requests-ntlm-1.1.0 requests-oauthlib-1.3.0 rsa-3.1.4 scandir-1.10.0 simplejson-3.17.0 six-1.14.0 stevedore-1.31.0 tencentcloud-sdk-python-3.0.111 typing-3.7.4.1 uritemplate-3.0.1 urllib3-1.25.7 vine-1.3.0 wcwidth-0.1.8 wrapt-1.11.2 xmltodict-0.12.0 zipp-1.0.0
+#(env)
+
+rm -rf /opt/cloudchef/integration/deploy
+
+ln -s /etc/cloudchef/configs/integration/env /opt/cloudchef/integration/config/env
+ln -s /etc/cloudchef/configs/integration/gunicorn.py /opt/cloudchef/integration/config/gunicorn.py
+chmod 644 /opt/cloudchef/integration/config/env
+chmod 644 /opt/cloudchef/integration/config/gunicorn.py
+chown -h cfyuser:cfyuser /opt/cloudchef/integration/config/env
+chown -h cfyuser:cfyuser /opt/cloudchef/integration/config/gunicorn.py
+
+cp /root/smartcmp-ansible/roles/integration/templates/integration-api.service.j2 /usr/lib/systemd/system/cloudchef-integration-api.service
+cp /root/smartcmp-ansible/roles/integration/templates/integration-worker.service.j2 /usr/lib/systemd/system/cloudchef-integration-worker.service
+cp /root/smartcmp-ansible/roles/integration/templates/icmp-ping-group.service.j2 /usr/lib/systemd/system/icmp-ping-group.service
+sed -i "s#{{ admin_user }}#cfyuser#g;s#{{ admin_group }}#cfyuser#g;s#{{ install_base_path }}#/opt/cloudchef#g;s#{{ distribution }}#cloudchef#g" /usr/lib/systemd/system/cloudchef-integration-api.service
+sed -i "s#{{ distribution }}#cloudchef#g;s#{{ install_base_path }}#/opt/cloudchef#g;s#{{ admin_user }}#cfyuser#g;s#{{ admin_group }}#cfyuser#g;s#{{ log_base_path }}#/var/log/cloudchef#g" /usr/lib/systemd/system/cloudchef-integration-worker.service
+
+mysql -ucloudchef -pc10udch3f -e "CREATE DATABASE IF NOT EXISTS int_result DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"
+
+systemctl start cloudchef-integration-worker
+systemctl start cloudchef-integration-api
+systemctl start icmp-ping-group.service
+systemctl enable cloudchef-integration-worker
+systemctl enable cloudchef-integration-api
+systemctl enable icmp-ping-group.service
+
+ln -s /etc/cloudchef/configs/integration/integration /etc/logrotate.d/integration
+chmod 644 /etc/logrotate.d/integration
+chown -h root:root /etc/logrotate.d/integration
+
+cp /root/smartcmp-ansible/roles/integration/templates/tables.sql.j2 /tmp/tables.sql
+
+mysql  -u cloudchef -pc10udch3f int_result < /tmp/tables.sql
+
+#sds
+mkdir /opt/cloudchef/sds/
+chown cfyuser:cfyuser /opt/cloudchef/sds/
+
+mkdir /opt/manager/resources/packages/sds/
+chown cfyuser:cfyuser /opt/manager/resources/packages/sds/
+
+chmod -R 775 /etc/cloudchef/configs/sds/
+chown -R cfyuser:cfyuser /etc/cloudchef/configs/sds/
+
+cd /root/smartcmp-ansible/files/
+tar -zxvf cloudchef-sds.tar.gz -C /opt/manager/resources/packages/sds/
+
+tar -zxvf /opt/manager/resources/packages/sds//storage_controller.tar.gz -C /opt/manager/resources/packages/sds/
+chmod -R 755 /opt/manager/resources/packages/sds/
+
+#yum -y install /opt/manager/resources/packages/sds//storage_controller/packages/sshpass-1.06-2.el7.x86_64.rpm
+
+chmod 755 /etc/ansible/
+chmod 755 /etc/ansible/roles/
+
+tar -zxvf /opt/manager/resources/packages/sds//Akrog.storage.tar.gz -C /etc/ansible/roles/
+chmod -R 755 /etc/ansible/roles/
+
+virtualenv --no-download /opt/cloudchef/sds//env
+#New python executable in /opt/cloudchef/sds/env/bin/python2
+#Also creating executable in /opt/cloudchef/sds/env/bin/python
+#Installing setuptools, pip, wheel...done.
+
+source /opt/cloudchef/sds/env/bin/activate
+pip install --upgrade pip --force-reinstall --no-index --find-links "/opt/manager/resources"/packages/sds//storage_controller/wheels
+#DEPRECATION: Python 2.7 will reach the end of its life on January 1st, 2020. Please upgrade your Python as Python 2.7 won't be maintained after that date. A future version of pip will drop support for Python 2.7. More details about Python 2 support in pip, can be found at https://pip.pypa.io/en/latest/development/release-process/#python-2-support
+#Looking in links: /opt/manager/resources/packages/sds//storage_controller/wheels
+#Collecting pip
+#Installing collected packages: pip
+#  Found existing installation: pip 19.2.1
+#    Uninstalling pip-19.2.1:
+#      Successfully uninstalled pip-19.2.1
+#Successfully installed pip-19.2.1
+
+source /opt/cloudchef/sds//env/bin/activate
+pip install -r /opt/manager/resources/packages/sds//storage_controller/requirements.txt --upgrade --force-reinstall --no-index --find-links "/opt/manager/resources"/packages/sds//storage_controller/wheels
+
+mysql -ucloudchef -pc10udch3f -e "CREATE DATABASE IF NOT EXISTS cinder DEFAULT CHARSET utf8 COLLATE utf8_general_ci;"
+
+#tomcat
+groupadd -g 10008 tomcat
+
+useradd -u 10008 -g 10008 -s /sbin/nologin -d /opt/cloudchef/tomcat  tomcat
+
+cp /tmp/cloudchef/packages/common/black.TTF /usr/share/fonts
+
+cd /usr/share/fonts
+mkfontscale;mkfontdir
+
+tar -zxvf /tmp/cloudchef/packages/tomcat/apache-tomcat-9.0.31.tar.gz -C /opt/cloudchef
+
+mv /opt/cloudchef/apache-tomcat-9.0.31 /opt/cloudchef/tomcat
+
+#mkdir /opt/cloudchef/tomcat/conf
+cp -f /root/smartcmp-ansible/roles/tomcat/templates/server.xml /opt/cloudchef/tomcat/conf/server.xml
+
+chown -R tomcat:tomcat /opt/cloudchef/tomcat
+
+mkdir /var/log/cloudchef/server
+#mkdir /opt/cloudchef/tomcat/temp
+chmod 755 /var/log/cloudchef/server
+chmod 755 /opt/cloudchef/tomcat/temp
+chown tomcat:tomcat /var/log/cloudchef/server
+chown tomcat:tomcat /opt/cloudchef/tomcat/temp
+
+rm -rf /opt/cloudchef/tomcat/webapps/ROOT
+
+cd /root/smartcmp-ansible/files/
+#mkdir /opt/cloudchef/tomcat/webapps/
+cp smartcmp.war /opt/cloudchef/tomcat/webapps/ROOT.war
+cp process.war /opt/cloudchef/tomcat/webapps/process.war
+cp notification.war /opt/cloudchef/tomcat/webapps/notification.war
+cp ops-listener.war /opt/cloudchef/tomcat/webapps/ops-listener.war
+chown tomcat:tomcat /opt/cloudchef/tomcat/webapps/ROOT.war
+chown tomcat:tomcat /opt/cloudchef/tomcat/webapps/process.war
+chown tomcat:tomcat /opt/cloudchef/tomcat/webapps/notification.war
+chown tomcat:tomcat /opt/cloudchef/tomcat/webapps/ops-listener.war
+
+mv -T /etc/cron.daily/logrotate /etc/cron.hourly/logrotate
+
+cp /root/smartcmp-ansible/roles/tomcat/templates/tomcat.service.j2 /usr/lib/systemd/system/cloudchef-tomcat.service
+sed -i "s#{{ tomcat_service_user }}#tomcat#g;s#{{ tomcat_service_group }}#tomcat#g;s#{{ distribution }}#cloudchef#g;s#{{ install_base_path }}#/opt/cloudchef#g" /usr/lib/systemd/system/cloudchef-tomcat.service
+
+ln -s /etc/cloudchef/configs/tomcat/context.xml /opt/cloudchef/tomcat/conf/context.xml
+ln -s /etc/cloudchef/configs/tomcat/cloudchef-tomcat /etc/sysconfig/cloudchef-tomcat
+mkdir /opt/cloudchef/tomcat/lib/
+ln -s /etc/cloudchef/configs/tomcat/log4j2.xml /opt/cloudchef/tomcat/lib/log4j2.xml
+ln -s /etc/cloudchef/configs/tomcat/alarm-operation.json /opt/cloudchef/tomcat/conf/alarm-operation.json
+mkdir /opt/cloudchef/tomcat/bin
+ln -s /etc/cloudchef/configs/tomcat/setenv.sh /opt/cloudchef/tomcat/bin/setenv.sh
+ln -s /etc/cloudchef/configs/tomcat/cmp_log4j2.xml /opt/cloudchef/tomcat/lib/cmp_log4j2.xml
+ln -s /etc/cloudchef/configs/tomcat/process_log4j2.xml /opt/cloudchef/tomcat/lib/process_log4j2.xml
+ln -s /etc/cloudchef/configs/tomcat/notification_log4j2.xml /opt/cloudchef/tomcat/lib/notification_log4j2.xml
+chmod 755 /opt/cloudchef/tomcat/conf/context.xml
+chmod 755 /etc/sysconfig/cloudchef-tomcat
+chmod 755 /opt/cloudchef/tomcat/lib/log4j2.xml
+chmod 755 /opt/cloudchef/tomcat/conf/alarm-operation.json
+chmod 755 /opt/cloudchef/tomcat/bin/setenv.sh
+chmod 755 /opt/cloudchef/tomcat/lib/cmp_log4j2.xml
+chmod 755 /opt/cloudchef/tomcat/lib/process_log4j2.xml
+chmod 755 /opt/cloudchef/tomcat/lib/notification_log4j2.xml
+chown -h tomcat:tomcat /opt/cloudchef/tomcat/conf/context.xml
+chown -h tomcat:tomcat /etc/sysconfig/cloudchef-tomcat
+chown -h tomcat:tomcat /opt/cloudchef/tomcat/lib/log4j2.xml
+chown -h tomcat:tomcat /opt/cloudchef/tomcat/conf/alarm-operation.json
+chown -h tomcat:tomcat /opt/cloudchef/tomcat/bin/setenv.sh
+chown -h tomcat:tomcat /opt/cloudchef/tomcat/lib/cmp_log4j2.xml
+chown -h tomcat:tomcat /opt/cloudchef/tomcat/lib/process_log4j2.xml
+chown -h tomcat:tomcat /opt/cloudchef/tomcat/lib/notification_log4j2.xml
+
+chown -R tomcat:tomcat /opt/cloudchef/tomcat
+
+rm -rf /opt/cloudchef/tomcat/webapps/docs
+rm -rf /opt/cloudchef/tomcat/webapps/examples
+rm -rf /opt/cloudchef/tomcat/webapps/host-manager
+rm -rf /opt/cloudchef/tomcat/webapps/manager
+
+tar -zxvf /root/smartcmp-ansible/files/help.tar.gz -C /opt/cloudchef/tomcat/webapps/
+
+tar -zxvf /root/smartcmp-ansible/files/help-en.tar.gz -C /opt/cloudchef/tomcat/webapps/
+
+grep -rl "CMP-PUBLIC-IP" "/opt/cloudchef/tomcat/webapps/help" | xargs sed -i 's/CMP-PUBLIC-IP/192.168.92.16/g'
+
+grep -rl "CMP-PUBLIC-IP" "/opt/cloudchef/tomcat/webapps/help-en" | xargs sed -i 's/CMP-PUBLIC-IP/192.168.92.16/g'
+
+tar -zxvf /root/smartcmp-ansible/files/component.tar.gz -C /opt/manager/resources/
+chown -R tomcat:tomcat /opt/manager/resources/component/
+
+#manager-ip-setter
+mkdir /opt/cloudchef/manager-ip-setter
+chmod 755 /opt/cloudchef/manager-ip-setter
+chown cfyuser:cfyuser /opt/cloudchef/manager-ip-setter
+
+cp /root/smartcmp-ansible/roles/manager-ip-setter/templates/create-internal-ssl-certs.py.j2 /opt/cloudchef/manager-ip-setter/create-internal-ssl-certs.py
+cp /root/smartcmp-ansible/roles/manager-ip-setter/templates/manager-ip-setter.sh.j2 /opt/cloudchef/manager-ip-setter/manager-ip-setter.sh
+cp /root/smartcmp-ansible/roles/manager-ip-setter/templates/update-provider-context.py.j2 /opt/cloudchef/manager-ip-setter/update-provider-context.py
+cp /root/smartcmp-ansible/roles/manager-ip-setter/templates/utils.py.j2 /opt/cloudchef/manager-ip-setter/utils.py
+cd /opt/cloudchef/manager-ip-setter
+sed -i 's/{{ distribution }}/cloudchef/g;s/{{ default_password }}/c10udch3f/g;s/{{ admin_user }}/cfyuser/g;s/{{ admin_group }}/cfyuser/g' *
+sed -i "s#{{ install_base_path }}#/opt/cloudchef#g;s#{{ ssl_path }}#/etc/cloudify/ssl/#g;s#{{ log_base_path }}#/var/log/cloudchef#g" *
+chmod 755 /opt/cloudchef/manager-ip-setter/create-internal-ssl-certs.py
+chmod 755 /opt/cloudchef/manager-ip-setter/manager-ip-setter.sh
+chmod 755 /opt/cloudchef/manager-ip-setter/update-provider-context.py
+chmod 755 /opt/cloudchef/manager-ip-setter/utils.py
+chown cfyuser:cfyuser /opt/cloudchef/manager-ip-setter/create-internal-ssl-certs.py
+chown cfyuser:cfyuser /opt/cloudchef/manager-ip-setter/manager-ip-setter.sh
+chown cfyuser:cfyuser /opt/cloudchef/manager-ip-setter/update-provider-context.py
+chown cfyuser:cfyuser /opt/cloudchef/manager-ip-setter/utils.py
+
+#report
+firewall-cmd --zone=public --add-port=8081/tcp --permanent
+firewall-cmd --reload
+
+tar -zxvf /tmp/cloudchef/packages/tomcat/apache-tomcat-9.0.31.tar.gz -C /opt/cloudchef
+
+mv /opt/cloudchef/apache-tomcat-9.0.31 /opt/cloudchef/report
+
+cp -f /root/smartcmp-ansible/roles/report/templates/server.xml /opt/cloudchef/report/conf/server.xml
+
+chown -R tomcat:tomcat /opt/cloudchef/report
+
+rm -rf /opt/cloudchef/report/webapps/ROOT/
+
+cp /root/smartcmp-ansible/files/smartcmp-report.war /opt/cloudchef/report/webapps/report.war
+chown tomcat:tomcat /opt/cloudchef/report/webapps/report.war
+
+cp /root/smartcmp-ansible/roles/report/templates/report.service.j2 /usr/lib/systemd/system/cloudchef-report.service
+sed -i "s#{{ distribution }}#cloudchef#g;s#{{ install_base_path }}#/opt/cloudchef#g" /usr/lib/systemd/system/cloudchef-report.service
+
+ln -s /etc/cloudchef/configs/report/setenv.sh /opt/cloudchef/report/bin/setenv.sh
+ln -s /etc/cloudchef/configs/report/cloudchef-report /etc/sysconfig/cloudchef-report
+ln -s /etc/cloudchef/configs/report/log4j2.xml /opt/cloudchef/report/lib/log4j2.xml
+ln -sf /etc/cloudchef/configs/report/context.xml /opt/cloudchef/report/conf/context.xml
+chown -h tomcat:tomcat /opt/cloudchef/report/bin/setenv.sh
+chown -h tomcat:tomcat /etc/sysconfig/cloudchef-report
+chown -h tomcat:tomcat /opt/cloudchef/report/lib/log4j2.xml
+chown -h tomcat:tomcat /opt/cloudchef/report/conf/context.xml
+
+systemctl start cloudchef-report
+systemctl enable cloudchef-report
+
+rm -rf /opt/cloudchef/report/webapps/docs
+rm -rf /opt/cloudchef/report/webapps/examples
+rm -rf /opt/cloudchef/report/webapps/host-manager
+rm -rf /opt/cloudchef/report/webapps/manager
+
+#dashboard
+firewall-cmd --zone=public --add-port=3005/tcp --permanent
+
+firewall-cmd --reload
+
+mkdir /opt/cloudchef/dashboard
+mkdir /var/log/cloudchef/dashboard
+chmod 755 /opt/cloudchef/dashboard
+chmod 755 /var/log/cloudchef/dashboard
+chown cfyuser:cfyuser /opt/cloudchef/dashboard
+chown cfyuser:cfyuser /var/log/cloudchef/dashboard
+
+cp /root/smartcmp-ansible/files/smartcmpdashboard.jar /opt/cloudchef/dashboard/smartcmpdashboard.jar
+cp /root/smartcmp-ansible/files/smartcmpdashboard.sql /opt/cloudchef/dashboard/smartcmpdashboard.sql
+chmod 755 /opt/cloudchef/dashboard/smartcmpdashboard.jar
+chmod 755 /opt/cloudchef/dashboard/smartcmpdashboard.sql
+chown cfyuser:cfyuser /opt/cloudchef/dashboard/smartcmpdashboard.jar
+chown cfyuser:cfyuser /opt/cloudchef/dashboard/smartcmpdashboard.sql
+
+cp /root/smartcmp-ansible/files/smartcmpdashboard.sql /tmp/smartcmpdashboard.sql
+chmod 755 /tmp/smartcmpdashboard.sql
+
+mysql -uroot -p"c10udch3f" -e "use SmartCMPDashboard; source /tmp/smartcmpdashboard.sql;"
+
+cp /root/smartcmp-ansible/roles/dashboard/templates/startup.sh.j2 /opt/cloudchef/dashboard/startup.sh
+chmod 755 /opt/cloudchef/dashboard/startup.sh
+chown cfyuser:cfyuser /opt/cloudchef/dashboard/startup.sh
+sed -i "s#{{ log_base_path }}#/var/log/cloudchef#g;s#{{ install_base_path }}#/opt/cloudchef#g;s#{{ dashboard_jar }}#smartcmpdashboard.jar#g" /opt/cloudchef/dashboard/startup.sh
+
+cp /root/smartcmp-ansible/roles/dashboard/templates/dashboard.service.j2  /usr/lib/systemd/system/cloudchef-dashboard.service
+sed -i "s#{{ distribution }}#cloudchef#g;s#{{ admin_user }}#cfyuser#g;s#{{ admin_group }}#cfyuser#g;s#{{ install_base_path }}#/opt/cloudchef#g" /usr/lib/systemd/system/cloudchef-dashboard.service
+
+ln -s /etc/cloudchef/configs/dashboard/cloudchef-dashboard /etc/sysconfig/cloudchef-dashboard
+chown -h cfyuser:cfyuser /etc/sysconfig/cloudchef-dashboard
+
+systemctl start cloudchef-dashboard
+systemctl enable cloudchef-dashboard
+
+#guacamole
+firewall-cmd --zone=public --add-port=4822/tcp --permanent
+firewall-cmd --reload
+
+mkdir /opt/cloudchef/guacamole
+mkdir /opt/cloudchef/guacamole/extensions
+mkdir /opt/cloudchef/guacamole/lib
+chmod 755 /opt/cloudchef/guacamole
+chmod 755 /opt/cloudchef/guacamole/extensions
+chmod 755 /opt/cloudchef/guacamole/lib
+chown tomcat:tomcat /opt/cloudchef/guacamole
+chown tomcat:tomcat /opt/cloudchef/guacamole/extensions
+chown tomcat:tomcat /opt/cloudchef/guacamole/lib
+
+cp /root/smartcmp-ansible/roles/guacamole/templates/init_guacamole.sql.j2  /tmp/init_guacamole.sql
+chown mysql:mysql /tmp/init_guacamole.sql
+sed -i 's/{{ guacamole_database_name }}/guacamole_db/g' /tmp/init_guacamole.sql
+sed -i 's/{{ guacamole_database_username }}/guacamole_user/g' /tmp/init_guacamole.sql
+sed -i 's/{{ guacamole_database_password }}/guacamole_password/g' /tmp/init_guacamole.sql
+
+mysql -uroot -P 3306 -p"c10udch3f" -e "source /tmp/init_guacamole.sql"
+
+ln -s /etc/cloudchef/configs/guacamole/guacamole.properties /opt/cloudchef/guacamole/guacamole.properties
+chown -h tomcat:tomcat /opt/cloudchef/guacamole/guacamole.properties
+
+cp /root/smartcmp-ansible/files/guacamole-auth-jdbc-mysql.jar /opt/cloudchef/guacamole/extensions/guacamole-auth-jdbc-mysql.jar
+cp /tmp/cloudchef/packages/guacamole/mysql-connector-java-8.0.16.jar /opt/cloudchef/guacamole/lib/mysql-connector-java-8.0.16.jar
+cp /root/smartcmp-ansible/files/guacamole.war /opt/cloudchef/tomcat/webapps/guacamole.war
+chown tomcat:tomcat /opt/cloudchef/guacamole/extensions/guacamole-auth-jdbc-mysql.jar
+chown tomcat:tomcat /opt/cloudchef/guacamole/lib/mysql-connector-java-8.0.16.jar
+chown tomcat:tomcat /opt/cloudchef/tomcat/webapps/guacamole.war
+
+rpm -ivhU /tmp/cloudchef/packages/guacd/* --nodeps --force
+
+echo 'OPTS="-l 4822 -b 0.0.0.0"' >> /etc/sysconfig/guacd
+
+sed -i 's/User=guacd/User=nginx/g' /usr/lib/systemd/system/guacd.service
+sed -i 's/Group=guacd/Group=nginx/g' /usr/lib/systemd/system/guacd.service
+
+mkdir -p /opt/manager/resources/guacd/192.168.92.16 && chmod 777 -R /opt/manager/resources/guacd
+
+systemctl start guacd
+systemctl enable guacd
+
+#final
+systemctl restart cloudchef-tomcat
+
+#curl -s -m 10 --connect-timeout 5 http://127.0.0.1:8080/tenants/default/loginType
+#"Normal"
+
+rm -rf /tmp/cloudchef/
+rm -rf /opt/cloudchef-instances
+rm -rf /opt/data
+rm -rf /opt/data.tar.gz
+rm -rf /var/cc/plugins
+rm -rf /var/cc/post-run

@@ -1,0 +1,10 @@
+            "conditional": {
+                "when": "event_type",
+                "eq": "physical"
+            },
+            "condition": "model.event_type === 'physical'",
+            "visibleIf": {
+                "event_type": [
+                    "physical"
+                ]
+            }

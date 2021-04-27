@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "value": 10,
+    "sales": 23,
+    "hulianwangqu": 20,
+    "imgSrc": "//img.alicdn.com/tfs/TB1ys5uAQL0gK0jSZFtXXXQCXXa-128-128.svg",
+    "link": "//www.aliyun.com/"
+  },
+  {
+    "id": 2,
+    "value": 10,
+    "sales": -34,
+    "hulianwangqu": 45,
+    "imgSrc": "//img.alicdn.com/tfs/TB14nKqAGL7gK0jSZFBXXXZZpXa-128-128.svg"
+  },
+  {
+    "id": 3,
+    "value": -45,
+    "sales": 0,
+    "hulianwangqu": 80,
+    "imgSrc": "//img.alicdn.com/tfs/TB1sz1xAQL0gK0jSZFxXXXWHVXa-128-128.svg"
+  }
+]

@@ -1,0 +1,40 @@
+{
+    "type": "object",
+    "properties": {
+        "zhixingjilu": {
+            "id": "zhixingjilu",
+            "type": "string",
+            "widget": {
+                "id": "textarea"
+            },
+            "inputClass": "",
+            "index": 0,
+            "title": "执行记录",
+            "required": true
+        },
+        "schemaFormValid": {
+            "hidden": true,
+            "type": "boolean",
+            "default": false,
+            "condition": "1 === 2",
+            "widget": {
+                "id": "hidden"
+            }
+        }
+    },
+    "fieldsets": [
+        {
+            "id": "fieldset-default",
+            "title": "",
+            "description": "",
+            "name": "",
+            "fields": [
+                "zhixingjilu",
+                "schemaFormValid"
+            ]
+        }
+    ],
+    "widget": {
+        "id": "object"
+    }
+}

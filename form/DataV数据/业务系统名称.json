@@ -1,0 +1,56 @@
+[
+    {
+      "group": "中国",
+      "sysname": 688,
+      "vm": 618,
+      "series": 1
+    },
+    {
+      "group": "美国",
+      "sysname": 688,
+      "vm": 329,
+      "series": 1
+    },
+    {
+      "group": "俄罗斯",
+      "sysname": 688,
+      "vm": 11,
+      "series": 1
+    },
+    {
+      "group": "德国",
+      "sysname": 688,
+      "vm": 7,
+      "series": 1
+    },
+    {
+      "group": "吉尔吉斯斯坦",
+      "sysname": 688,
+      "vm": 6,
+      "series": 1
+    },
+    {
+      "group": "英国",
+      "sysname": 688,
+      "vm": 5,
+      "series": 1
+    },
+    {
+      "group": "日本",
+      "sysname": 688,
+      "vm": 4,
+      "series": 1
+    },
+    {
+      "group": "南非",
+      "sysname": 688,
+      "vm": 3,
+      "series": 1
+    },
+    {
+      "group": "巴西",
+      "sysname": 688,
+      "vm": 2,
+      "series": 1
+    }
+  ]
