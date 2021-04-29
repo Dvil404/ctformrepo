@@ -230,17 +230,21 @@
             "id": "time",
             "type": "string",
             "widget": {
-                "id": "string"
+                "id": "datetime"
             },
+            "formatType": "datetime",
+            "enableTime": true,
             "inputClass": "",
             "index": 8,
             "title": "通报时间",
+            "format": "yyyy-MM-dd HH:mm",
             "condition": "model.eventform_type === 'basic'",
             "visibleIf": {
                 "eventform_type": [
                     "basic"
                 ]
-            }
+            },
+            "required": true
         },
         "event_type": {
             "id": "event_type",
@@ -608,17 +612,21 @@
             "id": "time2",
             "type": "string",
             "widget": {
-                "id": "string"
+                "id": "datetime"
             },
+            "formatType": "datetime",
+            "enableTime": true,
             "inputClass": "",
             "index": 21,
             "title": "通报时间",
+            "format": "yyyy-MM-dd HH:mm",
             "condition": "model.eventform_type === 'nobasic'",
             "visibleIf": {
                 "eventform_type": [
                     "nobasic"
                 ]
-            }
+            },
+            "required": true
         },
         "type2": {
             "id": "type2",
