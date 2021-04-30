@@ -1,0 +1,98 @@
+{
+    "type": "object",
+    "properties": {
+        "diaoyan_start_time": {
+            "id": "diaoyan_start_time",
+            "type": "string",
+            "config": {
+                "visibility": {
+                    "allowInRequest": true
+                },
+                "modification": {
+                    "allowInApproval": false
+                }
+            },
+            "widget": {
+                "id": "datetime"
+            },
+            "formatType": "datetime",
+            "enableTime": true,
+            "inputClass": "",
+            "index": 0,
+            "title": "调研开始时间",
+            "format": "yyyy-MM-dd HH:mm",
+            "required": true
+        },
+        "diaoyan_end_time": {
+            "id": "diaoyan_end_time",
+            "type": "string",
+            "config": {
+                "visibility": {
+                    "allowInRequest": true
+                },
+                "modification": {
+                    "allowInApproval": false
+                }
+            },
+            "widget": {
+                "id": "datetime"
+            },
+            "formatType": "datetime",
+            "enableTime": true,
+            "inputClass": "",
+            "index": 1,
+            "title": "调研完成时间",
+            "format": "yyyy-MM-dd HH:mm",
+            "required": true
+        },
+        "fenxiguocheng": {
+            "id": "fenxiguocheng",
+            "type": "string",
+            "widget": {
+                "id": "textarea"
+            },
+            "inputClass": "",
+            "index": 2,
+            "title": "分析过程及根本原因描述",
+            "required": true
+        },
+        "resolve_task": {
+            "id": "resolve_task",
+            "type": "string",
+            "widget": {
+                "id": "textarea"
+            },
+            "inputClass": "",
+            "index": 3,
+            "title": "解决方案",
+            "required": true
+        },
+        "schemaFormValid": {
+            "hidden": true,
+            "type": "boolean",
+            "default": false,
+            "condition": "1 === 2",
+            "widget": {
+                "id": "hidden"
+            }
+        }
+    },
+    "fieldsets": [
+        {
+            "id": "fieldset-default",
+            "title": "",
+            "description": "",
+            "name": "",
+            "fields": [
+                "diaoyan_start_time",
+                "diaoyan_end_time",
+                "fenxiguocheng",
+                "resolve_task",
+                "schemaFormValid"
+            ]
+        }
+    ],
+    "widget": {
+        "id": "object"
+    }
+}
