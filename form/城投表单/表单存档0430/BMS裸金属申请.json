@@ -1,0 +1,162 @@
+{
+    "type": "object",
+    "properties": {
+        "bms_name": {
+            "id": "bms_name",
+            "type": "string",
+            "widget": {
+                "id": "string"
+            },
+            "inputClass": "",
+            "index": 0,
+            "title": "裸金属名称",
+            "required": true
+        },
+        "bms_az": {
+            "id": "bms_az",
+            "type": "string",
+            "widget": {
+                "id": "select"
+            },
+            "inputClass": "",
+            "index": 1,
+            "title": "分区",
+            "selectDatas": [
+                {
+                    "id": "生产区",
+                    "name": "生产区"
+                },
+                {
+                    "id": "灾备区",
+                    "name": "灾备区"
+                }
+            ],
+            "required": true
+        },
+        "bms_format": {
+            "id": "bms_format",
+            "type": "string",
+            "widget": {
+                "id": "select"
+            },
+            "inputClass": "",
+            "index": 2,
+            "title": "裸金属规格",
+            "selectDatas": [
+                {
+                    "id": "2288",
+                    "name": "2288（48C-CPU 768GB-内存 478GB-存储）"
+                },
+                {
+                    "id": "2488",
+                    "name": "2488（112C-CPU 1024GB-内存 478GB-存储）"
+                }
+            ],
+            "required": true
+        },
+        "bms_img": {
+            "id": "bms_img",
+            "type": "string",
+            "widget": {
+                "id": "select"
+            },
+            "inputClass": "",
+            "index": 3,
+            "title": "镜像",
+            "selectDatas": [
+                {
+                    "id": "CentOS7.3",
+                    "name": "CentOS7.3"
+                },
+                {
+                    "id": "CentOS7.6",
+                    "name": "CentOS7.6"
+                },
+                {
+                    "id": "RedHat7.4",
+                    "name": "RedHat7.4"
+                },
+                {
+                    "id": "RedHat7.6",
+                    "name": "RedHat7.6"
+                }
+            ],
+            "required": true
+        },
+        "storage": {
+            "id": "storage",
+            "type": "string",
+            "widget": {
+                "id": "string"
+            },
+            "inputClass": "",
+            "index": 4,
+            "title": "存储大小",
+            "required": true
+        },
+        "bms_count": {
+            "id": "bms_count",
+            "type": "string",
+            "widget": {
+                "id": "string"
+            },
+            "inputClass": "",
+            "index": 5,
+            "title": "申请数量",
+            "required": true
+        },
+        "bms_apply_time": {
+            "id": "bms_apply_time",
+            "align": "leftRight",
+            "type": "string",
+            "widget": {
+                "id": "radios"
+            },
+            "inputClass": "",
+            "index": 6,
+            "title": "申请时长",
+            "selectDatas": [
+                {
+                    "id": "不限",
+                    "name": "不限"
+                },
+                {
+                    "id": "1年",
+                    "name": "1年"
+                }
+            ],
+            "required": true,
+            "options": []
+        },
+        "schemaFormValid": {
+            "hidden": true,
+            "type": "boolean",
+            "default": false,
+            "condition": "1 === 2",
+            "widget": {
+                "id": "hidden"
+            }
+        }
+    },
+    "fieldsets": [
+        {
+            "id": "fieldset-default",
+            "title": "",
+            "description": "",
+            "name": "",
+            "fields": [
+                "bms_name",
+                "bms_az",
+                "bms_format",
+                "bms_img",
+                "storage",
+                "bms_count",
+                "bms_apply_time",
+                "schemaFormValid"
+            ]
+        }
+    ],
+    "widget": {
+        "id": "object"
+    }
+}

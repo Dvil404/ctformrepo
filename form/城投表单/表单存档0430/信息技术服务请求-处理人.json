@@ -1,21 +1,30 @@
 {
     "type": "object",
     "properties": {
-        "zhixingjilu": {
-            "id": "zhixingjilu",
+        "process_result": {
+            "id": "process_result",
             "type": "string",
             "widget": {
                 "id": "textarea"
             },
             "inputClass": "",
-            "index": 0,
-            "title": "执行记录",
-            "required": true
+            "index": 1,
+            "title": "处理过程及结果"
+        },
+        "remaining_problem": {
+            "id": "remaining_problem",
+            "type": "string",
+            "widget": {
+                "id": "textarea"
+            },
+            "inputClass": "",
+            "index": 2,
+            "title": "遗留问题"
         },
         "schemaFormValid": {
             "hidden": true,
             "type": "boolean",
-            "default": false,
+            "default": true,
             "condition": "1 === 2",
             "widget": {
                 "id": "hidden"
@@ -29,7 +38,8 @@
             "description": "",
             "name": "",
             "fields": [
-                "zhixingjilu",
+                "process_result",
+                "remaining_problem",
                 "schemaFormValid"
             ]
         }

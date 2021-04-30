@@ -1,27 +1,27 @@
 {
     "type": "object",
     "properties": {
-        "fankui": {
-            "id": "fankui",
-            "align": "leftRight",
+        "change_num": {
+            "id": "change_num",
             "type": "string",
             "widget": {
-                "id": "radios"
+                "id": "string"
             },
             "inputClass": "",
-            "index": 0,
-            "title": "反馈信息",
-            "selectDatas": [
-                {
-                    "id": "满意",
-                    "name": "满意"
-                },
-                {
-                    "id": "不满意",
-                    "name": "不满意"
-                }
-            ],
-            "options": []
+            "index": 4,
+            "title": "事件对应其它流程编号",
+            "required": true
+        },
+        "fenxi": {
+            "id": "fenxi",
+            "type": "string",
+            "widget": {
+                "id": "textarea"
+            },
+            "inputClass": "",
+            "index": 5,
+            "title": "事件原因及故障分析",
+            "required": true
         },
         "schemaFormValid": {
             "hidden": true,
@@ -40,7 +40,8 @@
             "description": "",
             "name": "",
             "fields": [
-                "fankui",
+                "change_num",
+                "fenxi",
                 "schemaFormValid"
             ]
         }
