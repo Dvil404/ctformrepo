@@ -1,0 +1,323 @@
+{
+    "type": "object",
+    "properties": {
+        "change_env": {
+            "id": "change_env",
+            "align": "leftRight",
+            "type": "string",
+            "config": {
+                "visibility": {
+                    "allowInRequest": true
+                },
+                "modification": {
+                    "allowInApproval": false
+                }
+            },
+            "widget": {
+                "id": "radios"
+            },
+            "inputClass": "",
+            "index": 0,
+            "title": "变更实施环境",
+            "default": "生产区",
+            "selectDatas": [
+                {
+                    "id": "生产区",
+                    "name": "生产区"
+                },
+                {
+                    "id": "出口区",
+                    "name": "出口区"
+                },
+                {
+                    "id": "测试区",
+                    "name": "测试区"
+                },
+                {
+                    "id": "灾备区",
+                    "name": "灾备区"
+                },
+                {
+                    "id": "运管区",
+                    "name": "运管区"
+                }
+            ],
+            "required": true,
+            "options": []
+        },
+        "change_type": {
+            "id": "change_type",
+            "align": "leftRight",
+            "type": "string",
+            "config": {
+                "visibility": {
+                    "allowInRequest": true
+                },
+                "modification": {
+                    "allowInApproval": false
+                }
+            },
+            "widget": {
+                "id": "radios"
+            },
+            "inputClass": "",
+            "index": 1,
+            "title": "变更类型",
+            "default": "标准变更",
+            "selectDatas": [
+                {
+                    "id": "标准变更",
+                    "name": "标准变更"
+                },
+                {
+                    "id": "一般变更",
+                    "name": "一般变更"
+                },
+                {
+                    "id": "重大变更",
+                    "name": "重大变更"
+                },
+                {
+                    "id": "紧急变更",
+                    "name": "紧急变更"
+                }
+            ],
+            "required": true,
+            "options": []
+        },
+        "start_time": {
+            "id": "start_time",
+            "type": "string",
+            "config": {
+                "visibility": {
+                    "allowInRequest": true
+                },
+                "modification": {
+                    "allowInApproval": false
+                }
+            },
+            "widget": {
+                "id": "datetime"
+            },
+            "formatType": "datetime",
+            "enableTime": true,
+            "inputClass": "",
+            "index": 2,
+            "title": "期望开始时间",
+            "format": "yyyy-MM-dd HH:mm",
+            "required": true
+        },
+        "end_time": {
+            "id": "end_time",
+            "type": "string",
+            "config": {
+                "visibility": {
+                    "allowInRequest": true
+                },
+                "modification": {
+                    "allowInApproval": false
+                }
+            },
+            "widget": {
+                "id": "datetime"
+            },
+            "formatType": "datetime",
+            "enableTime": true,
+            "inputClass": "",
+            "index": 3,
+            "title": "期望结束时间",
+            "format": "yyyy-MM-dd HH:mm",
+            "required": true
+        },
+        "change_sort": {
+            "id": "change_sort",
+            "type": "string",
+            "config": {
+                "visibility": {
+                    "allowInRequest": true
+                },
+                "modification": {
+                    "allowInApproval": false
+                }
+            },
+            "widget": {
+                "id": "select"
+            },
+            "inputClass": "",
+            "index": 4,
+            "title": "变更分类",
+            "selectDatas": [
+                {
+                    "id": "业务系统投产",
+                    "name": "业务系统投产"
+                },
+                {
+                    "id": "业务系统资源调整",
+                    "name": "业务系统资源调整"
+                },
+                {
+                    "id": "基础设施投产",
+                    "name": "基础设施投产"
+                },
+                {
+                    "id": "基础设施维护",
+                    "name": "基础设施维护"
+                },
+                {
+                    "id": "基础设施架构调整",
+                    "name": "基础设施架构调整"
+                },
+                {
+                    "id": "云平台配置调整",
+                    "name": "云平台配置调整"
+                },
+                {
+                    "id": "it设备投产",
+                    "name": "IT设备投产"
+                },
+                {
+                    "id": "it设备维护",
+                    "name": "IT设备维护"
+                },
+                {
+                    "id": "安全设备维护",
+                    "name": "安全设备维护"
+                },
+                {
+                    "id": "安全软件配置调整",
+                    "name": "安全软件配置调整"
+                }
+            ],
+            "required": true
+        },
+        "change_reason": {
+            "id": "change_reason",
+            "type": "string",
+            "config": {
+                "visibility": {
+                    "allowInRequest": true
+                },
+                "modification": {
+                    "allowInApproval": false
+                }
+            },
+            "widget": {
+                "id": "textarea"
+            },
+            "inputClass": "",
+            "index": 5,
+            "title": "变更原因",
+            "required": true,
+            "validationMessage": "请输入变更原因"
+        },
+        "change_plan": {
+            "id": "change_plan",
+            "type": "string",
+            "config": {
+                "visibility": {
+                    "allowInRequest": true
+                },
+                "modification": {
+                    "allowInApproval": false
+                }
+            },
+            "widget": {
+                "id": "textarea"
+            },
+            "inputClass": "",
+            "index": 6,
+            "title": "变更方案",
+            "required": true
+        },
+        "test_situation": {
+            "id": "test_situation",
+            "type": "string",
+            "config": {
+                "visibility": {
+                    "allowInRequest": true
+                },
+                "modification": {
+                    "allowInApproval": false
+                }
+            },
+            "widget": {
+                "id": "textarea"
+            },
+            "inputClass": "",
+            "index": 7,
+            "title": "方案测试情况",
+            "required": true
+        },
+        "dddd": {
+            "id": "dddd",
+            "type": "string",
+            "config": {
+                "visibility": {
+                    "allowInRequest": true
+                },
+                "modification": {
+                    "allowInApproval": false
+                }
+            },
+            "widget": {
+                "id": "textarea"
+            },
+            "inputClass": "",
+            "index": 8,
+            "title": "回退方案",
+            "required": true
+        },
+        "risk_assessment": {
+            "id": "risk_assessment",
+            "type": "string",
+            "config": {
+                "visibility": {
+                    "allowInRequest": true
+                },
+                "modification": {
+                    "allowInApproval": false
+                }
+            },
+            "widget": {
+                "id": "textarea"
+            },
+            "inputClass": "",
+            "index": 9,
+            "title": "风险和影响评估",
+            "required": true
+        },
+        "schemaFormValid": {
+            "hidden": true,
+            "type": "boolean",
+            "default": false,
+            "condition": "1 === 2",
+            "widget": {
+                "id": "hidden"
+            }
+        }
+    },
+    "fieldsets": [
+        {
+            "id": "fieldset-default",
+            "title": "",
+            "description": "",
+            "name": "",
+            "fields": [
+                "change_env",
+                "change_type",
+                "start_time",
+                "end_time",
+                "change_sort",
+                "change_reason",
+                "change_plan",
+                "test_situation",
+                "dddd",
+                "risk_assessment",
+                "schemaFormValid"
+            ]
+        }
+    ],
+    "widget": {
+        "id": "object"
+    }
+}
