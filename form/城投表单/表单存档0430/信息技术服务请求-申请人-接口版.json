@@ -20,6 +20,16 @@
             "selectDatas": [],
             "required": true
         },
+        "end_user": {
+            "id": "end_user",
+            "type": "string",
+            "widget": {
+                "id": "string"
+            },
+            "inputClass": "",
+            "index": 1,
+            "title": "最终使用人"
+        },
         "service_type": {
             "id": "service_type",
             "type": "string",
@@ -27,7 +37,7 @@
                 "id": "select"
             },
             "inputClass": "",
-            "index": 1,
+            "index": 2,
             "title": "服务类别",
             "selectDatas": [
                 {
@@ -75,6 +85,7 @@
             "name": "",
             "fields": [
                 "sys_type",
+                "end_user",
                 "service_type",
                 "schemaFormValid"
             ]
