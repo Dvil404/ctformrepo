@@ -1347,7 +1347,7 @@ Status_BBR(){
 # 其他功能
 Other_functions(){
 	echo && echo -e "  你要做什么？
-	
+		
   ${Green_font_prefix}1.${Font_color_suffix} 配置 BBR
   ${Green_font_prefix}2.${Font_color_suffix} 配置 锐速(ServerSpeeder)
   ${Green_font_prefix}3.${Font_color_suffix} 配置 LotServer(锐速母公司)
