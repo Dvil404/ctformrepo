@@ -15,6 +15,9 @@
                     "expression": "/groups?expand",
                     "method": "GET",
                     "source": "api"
+                },
+                "modification": {
+                    "allowInApproval": false
                 }
             },
             "selectDatas": [],
@@ -28,7 +31,7 @@
             },
             "inputClass": "",
             "index": 1,
-            "title": "最终使用人"
+            "title": "最终用户"
         },
         "service_type": {
             "id": "service_type",
