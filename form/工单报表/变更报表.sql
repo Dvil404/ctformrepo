@@ -3,6 +3,25 @@ select gr.workflow_id as '变更编号',
        gr.applicant as '申请人',
 			 (SELECT name from business_group WHERE id =gr.business_group_id) '所属业务组',
        pt1.assignee_name as '执行人',
+			 
+CASE
+		gr.state
+		WHEN 'FINISHED' THEN
+		"已完成" 
+		WHEN 'CANCELED' THEN
+		"已取消" 
+		WHEN 'STARTED' THEN
+		"已开始"
+		WHEN 'FAILED' THEN
+		"已失败"
+		WHEN 'TIMEOUT_CLOSED' THEN
+		"已超时"
+		WHEN 'APPROVAL_RETREATED' THEN
+		"已撤回"
+		WHEN 'APPROVAL_REJECTED' THEN
+		"已拒绝"
+	END '工单状态',
+	
        JSON_UNQUOTE(JSON_EXTRACT(gr.process_form,'$.change_type')) as '变更类型',
        JSON_UNQUOTE(JSON_EXTRACT(gr.process_form,'$.change_env')) as '变更实施环境',
        JSON_UNQUOTE(JSON_EXTRACT(gr.process_form,'$.change_sort'))  as '变更分类',
@@ -56,3 +75,4 @@ from generic_request gr
                    on gr.id = grl3.source_id
 where type ='CHANGE_SERVICE'
 AND gr.applicant NOT LIKE 'System administrator' ;
+
