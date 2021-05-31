@@ -179,6 +179,28 @@
             },
             "options": []
         },
+        "sys_type": {
+            "id": "sys_types",
+            "type": "string",
+            "inputClass": "",
+            "index": 0,
+            "title": "系统名称",
+            "config": {
+                "value": {
+                    "expression": "/groups?expand",
+                    "method": "GET",
+                    "source": "api"
+                },
+                "modification": {
+                    "allowInApproval": false
+                }
+            },
+            "widget": {
+                "id": "select"
+            },
+            "selectDatas": [],
+            "required": true
+        },
         "event_level": {
             "id": "event_level",
             "type": "string",
@@ -862,6 +884,7 @@
                 "event_area",
                 "event_influnce",
                 "yanzhongxing",
+                "sys_type",
                 "event_level",
                 "obj",
                 "time",
