@@ -11,9 +11,6 @@
 
 
 "config": {
-                "visibility": {
-                    "allowInRequest": false
-                },
                 "modification": {
                     "allowInApproval": false
                 }
