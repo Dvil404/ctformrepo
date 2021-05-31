@@ -8,8 +8,6 @@
                     "physical"
                 ]
             }
-
-
 "config": {
                 "modification": {
                     "allowInApproval": false
