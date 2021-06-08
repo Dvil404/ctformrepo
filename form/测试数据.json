@@ -1,4 +1,29 @@
-[{
-    "key1": "value",
-    "key2": "value"
-}]
+{'cpu': {'isDataEmpty': 'false', 'oversubscriptionCapacity': {'oversubscriptionRatio': 3.0, 'totalCapacity': {'unit': '核', 'capacityValue': '2808', 'displayCapacity': '2808 核'
+            }, 'allocatedCapacity': {'unit': '核', 'capacityValue': '2278', 'displayCapacity': '2278 核', 'ratio': 81.12536
+            }, 'freeCapacity': {'unit': '核', 'capacityValue': '530', 'displayCapacity': '530 核', 'ratio': 18.874643
+            }
+        }, 'actualCapacity': {'totalCapacity': {'unit': '核', 'capacityValue': '936', 'displayCapacity': '936 核'
+            }, 'usedCapacity': {'ratio': 10.722503, 'unit': '核', 'capacityValue': '0', 'displayCapacity': '0 核'
+            }, 'freeCapacity': {'ratio': 89.2775, 'unit': '核', 'capacityValue': '0', 'displayCapacity': '0 核'
+            }
+        }, 'collectTime': '', 'updateTime': -1
+    }, 'memory': {'isDataEmpty': 'false', 'oversubscriptionCapacity': {'oversubscriptionRatio': 1.0, 'totalCapacity': {'unit': 'GB', 'capacityValue': '13166.68359375', 'displayCapacity': '13166.68359375 GB'
+            }, 'allocatedCapacity': {'unit': 'GB', 'capacityValue': '10332.8154296875', 'displayCapacity': '10332.8154296875 GB', 'ratio': 78.47698
+            }, 'freeCapacity': {'unit': 'GB', 'capacityValue': '2833.8681640625', 'displayCapacity': '10332.8154296875 GB', 'ratio': 21.523022
+            }
+        }, 'actualCapacity': {'totalCapacity': {'unit': 'GB', 'capacityValue': '13166.68359375', 'displayCapacity': '13166.68359375 GB'
+            }, 'usedCapacity': {'ratio': 77.35476, 'unit': 'GB', 'capacityValue': '10185.056363540239', 'displayCapacity': '10185.056363540239 GB'
+            }, 'freeCapacity': {'ratio': 22.64524, 'unit': 'GB', 'capacityValue': '2981.62723020976', 'displayCapacity': '2981.62723020976 GB'
+            }
+        }, 'collectTime': '', 'updateTime': -1
+    }, 'storagePool': {'isDataEmpty': 'false', 'oversubscriptionCapacity': {'oversubscriptionRatio': 259.9786, 'totalCapacity': {'unit': 'TB', 'capacityValue': '351.50230407714844', 'displayCapacity': ' 351.50230407714844 TB'
+            }, 'allocatedCapacity': {'unit': 'TB', 'capacityValue': '278.033203125', 'displayCapacity': '278.033203125 TB', 'ratio': 79.09854
+            }, 'freeCapacity': {'unit': 'TB', 'capacityValue': '73.46908569335938', 'displayCapacity': '73.46908569335938 TB', 'ratio': 20.901457
+            }
+        }, 'actualCapacity': {'totalCapacity': {'unit': 'TB', 'capacityValue': '135.2043228149414', 'displayCapacity': '135.2043228149414 TB'
+            }, 'usedCapacity': {'unit': 'TB', 'capacityValue': '23.58836556226015', 'displayCapacity': '23.58836556226015 TB', 'ratio': 17.446459
+            }, 'freeCapacity': {'unit': 'TB', 'capacityValue': '111.61596298217773', 'displayCapacity': '111.61596298217773 TB', 'ratio': 82.55354
+            }
+        }, 'collectTime': '', 'updateTime': -1
+    }, 'eip': None, 'bms': None, 'gpu': None, 'npu': None
+}
