@@ -74,5 +74,9 @@ from generic_request gr
                     group by f.source_id) as grl3
                    on gr.id = grl3.source_id
 where type ='CHANGE_SERVICE'
+#if(${created_at} != '') 
+    AND gr.created_at >= STR_TO_DATE(CONCAT('${created_at}', '-01'),'%Y-%m-%d')
+      AND gr.created_at <= STR_TO_DATE(CONCAT('${created_at}', '-31'),'%Y-%m-%d')
+ #end
 AND gr.applicant NOT LIKE 'System administrator' ;
 

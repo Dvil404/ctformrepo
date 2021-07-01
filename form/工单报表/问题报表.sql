@@ -46,4 +46,8 @@ from generic_request gr
                     where a.created_at = b.create_at) as pt1
                    on gr.id = pt1.request_id and pt1.process_task_name = '服务处理'
 where type ='PROBLEM_SERVICE'
+#if(${created_at} != '') 
+    AND gr.created_at >= STR_TO_DATE(CONCAT('${created_at}', '-01'),'%Y-%m-%d')
+      AND gr.created_at <= STR_TO_DATE(CONCAT('${created_at}', '-31'),'%Y-%m-%d')
+ #end
 AND gr.applicant NOT LIKE 'System administrator';
