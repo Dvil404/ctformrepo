@@ -58,9 +58,9 @@ pt1.complete_at AS '解决时间',
 			 
 			 FROM_UNIXTIME(IF(JSON_EXTRACT(pt1.form,'$.eventform_type') = 'basic',JSON_EXTRACT(pt1.form,'$.time'),JSON_EXTRACT(pt1.form,'$.time2')) / 1000)  as '通报时间',
        
-       IF(pt1.assign_time, TIMESTAMPDIFF(HOUR, gr.created_at,pt1.assign_time), '-') AS '响应时长(小时)',
-       IF(pt1.complete_at, TIMESTAMPDIFF(HOUR, gr.created_at,pt1.complete_at), '-')  AS '恢复时长(小时)',
-       IF(pt1.complete_at, TIMESTAMPDIFF(HOUR, pt1.assign_time,pt1.complete_at), '-')  AS '解决时长(小时)',
+       IF(pt1.assign_time, TIMESTAMPDIFF(MINUTE, gr.created_at,pt1.assign_time), '-') AS '响应时长(分钟)',
+       IF(pt1.complete_at, TIMESTAMPDIFF(MINUTE, gr.created_at,pt1.complete_at), '-')  AS '恢复时长(分钟)',
+       IF(pt1.complete_at, TIMESTAMPDIFF(MINUTE, pt1.assign_time,pt1.complete_at), '-')  AS '解决时长(分钟)',
        JSON_EXTRACT(pt1.form,'$.ola') AS '是否满足OLA要求',
        IF(grl2.changeNumbers is not null,'是','否') AS '是否转变更流程',
        grl2.changeNumbers AS '变更编号',
