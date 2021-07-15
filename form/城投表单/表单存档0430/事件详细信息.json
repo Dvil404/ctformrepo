@@ -183,7 +183,7 @@
             "id": "sys_types",
             "type": "string",
             "inputClass": "",
-            "index": 0,
+            "index": 5,
             "title": "系统名称",
             "config": {
                 "value": {
@@ -232,21 +232,29 @@
                 ]
             }
         },
+        
         "obj": {
             "id": "obj",
             "type": "string",
-            "widget": {
-                "id": "string"
-            },
-            "inputClass": "",
-            "index": 7,
             "title": "通报对象",
+            "index": 7,
+            "config": {
+                "value": {
+                    "expression": "/users?expand",
+                    "method": "GET",
+                    "source": "api"
+                }
+            },
             "condition": "model.eventform_type === 'basic'",
             "visibleIf": {
                 "eventform_type": [
                     "basic"
                 ]
-            }
+            },
+            "widget": {
+                "id": "select"
+            },
+            "selectDatas": []
         },
         "time": {
             "id": "time",
