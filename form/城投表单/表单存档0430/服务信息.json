@@ -24,14 +24,22 @@
             "required": true
         },
         "end_user": {
-            "id": "end_user",
             "type": "string",
-            "widget": {
-                "id": "string"
+            "id": "end_user",
+            "title": "最终用户",
+            "config": {
+                "value": {
+                    "expression": "/users?expand",
+                    "method": "GET",
+                    "source": "api"
+                }
             },
-            "inputClass": "",
             "index": 1,
-            "title": "最终用户"
+            "widget": {
+                "id": "select"
+            },
+            "selectDatas": [],
+            "required": true
         },
         "service_type": {
             "id": "service_type",
@@ -87,8 +95,8 @@
             "description": "",
             "name": "",
             "fields": [
-                "sys_type",
                 "end_user",
+                "sys_type",
                 "service_type",
                 "schemaFormValid"
             ]
