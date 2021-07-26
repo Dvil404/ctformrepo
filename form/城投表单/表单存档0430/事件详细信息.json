@@ -232,19 +232,12 @@
                 ]
             }
         },
-        
         "obj": {
             "id": "obj",
             "type": "string",
             "title": "通报对象",
+            "inputClass": "",
             "index": 7,
-            "config": {
-                "value": {
-                    "expression": "/users?expand",
-                    "method": "GET",
-                    "source": "api"
-                }
-            },
             "condition": "model.eventform_type === 'basic'",
             "visibleIf": {
                 "eventform_type": [
@@ -252,7 +245,7 @@
                 ]
             },
             "widget": {
-                "id": "select"
+                "id": "string"
             },
             "selectDatas": []
         },
