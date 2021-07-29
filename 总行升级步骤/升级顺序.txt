@@ -599,7 +599,45 @@ rm -rf /opt/cloudchef/alertmanager-bak
 # 9. 删除安装包
 rm -rf alertmanager-0.19.0.linux-amd64.tar.gz alertmanager-0.19.0.linux-amd64
 
+十三、安装policy服务
+systemctl stop cloudchef-tomcat
+cd /opt/cloudchef/tomcat/webapps
 
+  policy.war
+
+# 添加tomcat的setenv环境变量：
+export ENV_MONITOR_SERVER_URL="http://127.0.0.1:9090"
+
+十四、安装celery-monitor 
+# 下载 
+  celery-monitor.tar.gz
+  
+# 解压
+tar -zxf celery-monitor.tar.gz
+  
+# 安装
+cd celery-monitor
+python install_celery_monitor.py
+# 安装成功后，会有"Install and start celery-monitor successfully!"字样输出
+  
+# 服务检查
+systemctl status celery-monitor
+
+十五、安装terraform
+#cd /usr/local/bin 
+
+ terraform_0.12.16_linux_amd64.zip
+
+#unzip terraform_0.12.16_linux_amd64.zip
+
+# 配置环境变量
+vi /etc/profile
+在最后一行添加：export TERRAFORM_HOME=/usr/local/bin/terraform
+保存后执行：source /etc/profile
+
+ terraform-plugins.tar.gz
+
+tar -zxf terraform-plugins.tar.gz -C /opt/manager/resources/
 
 
 
