@@ -15,7 +15,7 @@ systemctl stop cloudchef-consul
 rm -rf /opt/cloudchef/consul/consul-bak
 cp -r /opt/cloudchef/consul/consul /opt/cloudchef/consul/consul-bak
 # 3. 下载新包
-curl -LO http://192.168.84.254:1688/smartcmp/upgrade/6.5.0/consul_1.9.3_linux_amd64.zip
+ consul_1.9.3_linux_amd64.zip
 # 4. 解压替换
 unzip consul_1.9.3_linux_amd64.zip -d /opt/cloudchef/consul
 # Enter yes to overwrite old consul
@@ -259,7 +259,7 @@ rm -rf /opt/cloudchef/pushgateway-bak
 cp -r /opt/cloudchef/pushgateway /opt/cloudchef/pushgateway-bak
 
 # 3. 下载新包
-curl -LO http://192.168.84.254:1688/software/pushgateway-1.4.1.linux-amd64.tar.gz
+ pushgateway-1.4.1.linux-amd64.tar.gz
 
 # 4. 解压
 tar -zxf pushgateway-1.4.1.linux-amd64.tar.gz
@@ -554,7 +554,7 @@ systemctl stop cloudchef-prometheus-resource
 rm -rf /opt/cloudchef/prometheus-bak
 cp -r /opt/cloudchef/prometheus /opt/cloudchef/prometheus-bak
 # 3. 下载新包
-curl -LO http://192.168.84.254:1688/software/prometheus-2.18.1.linux-amd64.tar.gz
+ prometheus-2.18.1.linux-amd64.tar.gz
 # 4. 解压
 tar -zxf prometheus-2.18.1.linux-amd64.tar.gz
 # 5. 替换新文件
@@ -584,7 +584,7 @@ systemctl stop cloudchef-alertmanager
 rm -rf /opt/cloudchef/alertmanager-bak
 cp -r /opt/cloudchef/alertmanager /opt/cloudchef/alertmanager-bak
 # 3. 下载新包
-curl -LO http://192.168.84.254:1688/software/alertmanager-0.19.0.linux-amd64.tar.gz
+ alertmanager-0.19.0.linux-amd64.tar.gz
 # 4. 解压
 tar -zxf alertmanager-0.19.0.linux-amd64.tar.gz
 # 5. 替换新文件
@@ -639,6 +639,77 @@ vi /etc/profile
 
 tar -zxf terraform-plugins.tar.gz -C /opt/manager/resources/
 
+十六、升级intergration
+1. 
+cd /opt/cloudchef/integration
+  
+2. # 删除 /opt/cloudchef/integration 目录下除了config文件夹外的所有文件
+ls | grep -v config | xargs rm -rf
+  
+3. # 下载最新py3版本代码包
+wget http://192.168.84.254:1688/build/cloudchef-integration/master/latest/cloudchef-integration.tar.gz
+  
+4. # 解压代码包
+tar -xzvf cloudchef-integration.tar.gz
+  
+5. # 执行更新脚本
+cd deploy && sh update.sh
+十七、升级component
+1：cd /opt/manager/resources/components/
+# 检查是否已经存在components，这个路径是系统默认的，也可以通过环境变量ENV_EXTENSIBLE_COMPONENTS_LOAD_PATH自定义路径
+# 可选操作，设置组件路径的环境变量,例如
+vi /opt/cloudchef/tomcat/bin/setenv.sh
+export ENV_EXTENSIBLE_COMPONENTS_LOAD_PATH=file:/opt/manager/resources/components/
+ 
+cd /opt/manager/resources
+rm -rf smartcmp-component.tar.gz
+rm -rf component/
+wget  http://192.168.84.254:1688/build/smartcmp-component/release_6.2.x/latest/smartcmp-component.tar.gz
+tar zxf smartcmp-component.tar.gz --no-same-owner
+# 必须带  --no-same-owner  参数！！！
+chown -R tomcat. /opt/manager/resources/components
+chown cfyuser.  /opt/manager/resources
+
+十八、升级mgmtworker
+步骤一：
+# 下载所需要分支的升级包
+smartcmp-mgmtworker.tar.gz
+tar -zxvf smartcmp-mgmtworker.tar.gz
+cd smartcmp-mgmtworker
+# 停止mgmtworker服务
+systemctl stop cloudchef-mgmtworker
+ 
+步骤二（判断是否已升级）：
+/opt/mgmtworker/env/bin/python -V
+  
+如果返回"Python 3.7.9"，您的系统已经升级到python3，执行步骤三
+  
+如果返回其他值，代表没有升级过python3，执行步骤四
+ 
+步骤三：
+sh update.sh
+  
+systemctl restart cloudchef-mgmtworker
+  
+# 检查状态
+systemctl status cloudchef-mgmtworker
+ 
+步骤四：
+mv /opt/mgmtworker/env /opt/mgmtworker/env_bak
+sh install.sh
+  
+systemctl restart cloudchef-mgmtworker
+  
+# 检查状态
+systemctl status cloudchef-mgmtworker
+
+十九、升级plugins
+
+mkdir -p /var/cc/plugins
+cd /var/cc/plugins
+rm -rf *
+
+ plugins.tar.gz
 
 
-
+/opt/mgmtworker/env/bin/python upload-plugin-tool.py -u abstract,aci,aliyun,ansible,aws,azure,docker,exporter,f5,host_pool,hyperv,kubernetes,nsx,openstack,physical,powervc,qingcloud,sdx,vsphere,fabric

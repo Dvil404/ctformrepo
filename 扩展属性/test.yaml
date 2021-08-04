@@ -35,7 +35,7 @@ properties:
    fileStartTime:
       alias: 备份执行开始时间
       type: string
-   fileEndTime:
+   snapEndTime:
       alias: 备份执行结束时间
       type: string
    fileTime:
