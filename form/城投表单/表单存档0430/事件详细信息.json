@@ -368,10 +368,6 @@
                 {
                     "id": "ecm",
                     "name": "环控监测网络设备"
-                },
-                {
-                    "id": "ecm",
-                    "name": "环控监测网络设备"
                 }
             ],
             "condition": "model.malfunction === 'equipment'",
