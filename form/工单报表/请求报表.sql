@@ -5,17 +5,7 @@ SELECT
 	bg.NAME AS '申请人单位',
 	pt1.assignee_name AS '响应人',
 	pt1.assignee_name AS '处理人',
-CASE
-		gr.type 
-		WHEN 'PROBLEM_SERVICE' THEN
-		"问题工单" 
-		WHEN 'CHANGE_SERVICE' THEN
-		"变更工单" 
-		WHEN 'REQUEST_SERVICE' THEN
-		"请求工单" 
-		WHEN 'INCIDENT_SERVICE' THEN
-		"事件工单" 
-	END '工单类型',
+
 	
 	CASE
 		gr.state 
@@ -29,6 +19,9 @@ CASE
 		"已超时"
 	END '工单状态',
 	
+	JSON_UNQUOTE(JSON_EXTRACT(gr.process_form,'$.service_type')) as '服务类别',
+	(select name from user where  id =JSON_UNQUOTE(JSON_EXTRACT(gr.process_form,'$.end_user'))) as '最终用户',
+	
 	gr.created_at AS '申请时间点',
 	pt1.assign_time AS '响应时间点',
 	pt1.assign_time AS '开始时间点',
@@ -37,7 +30,7 @@ IF
 	( pt1.assign_time, TIMESTAMPDIFF( MINUTE, gr.created_at, pt1.assign_time ), '-' ) AS '响应时长(分钟)',
 IF
 	( pt1.complete_at, TIMESTAMPDIFF( MINUTE, gr.created_at, gr.complete_at ), '-' ) AS '完成时长(分钟)',
-	JSON_EXTRACT( pt2.form, '$.suggestion' ) AS '服务评价',
+	JSON_EXTRACT( pt2.form, '$.fuwu' ) AS '服务评价',
 IF
 	( grl1.incidentNumbers IS NOT NULL, '是', '否' ) AS '是否转事件',
 	grl1.incidentNumbers AS '事件编号',
@@ -118,4 +111,4 @@ WHERE
     AND gr.created_at >= STR_TO_DATE(CONCAT('${created_at}', '-01'),'%Y-%m-%d')
 		and gr.created_at <= STR_TO_DATE(CONCAT('${created_at}', '-31'),'%Y-%m-%d')
  #end
-	AND gr.applicant NOT LIKE 'System administrator' AND gr.applicant NOT LIKE 'lxp' AND gr.applicant NOT LIKE 'litong';
+	AND gr.applicant NOT LIKE 'System administrator' AND gr.applicant NOT LIKE 'lxp' AND gr.applicant NOT LIKE 'litong' ;

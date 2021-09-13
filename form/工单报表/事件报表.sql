@@ -19,7 +19,6 @@ CASE
       JSON_UNQUOTE(IF(JSON_EXTRACT(pt1.form,'$.eventform_type') = 'basic',JSON_EXTRACT(pt1.form,'$.event_area'),JSON_EXTRACT(pt1.form,'$.area2')) ) as '事件区域',
       JSON_UNQUOTE(IF(JSON_EXTRACT(pt1.form,'$.eventform_type') = 'basic',JSON_EXTRACT(pt1.form,'$.event_influnce'),JSON_EXTRACT(pt1.form,'$.influence2')) ) as '事件影响度',
       JSON_UNQUOTE(IF(JSON_EXTRACT(pt1.form,'$.eventform_type') = 'basic',JSON_EXTRACT(pt1.form,'$.yanzhongxing'),JSON_EXTRACT(pt1.form,'$.severity2')))  as '事件严重性',
-      JSON_UNQUOTE(IF(JSON_EXTRACT(pt1.form,'$.eventform_type') = 'basic',JSON_EXTRACT(pt1.form,'$.event_level'),JSON_EXTRACT(pt1.form,'$.level2')))  as '事件优先级',
       JSON_UNQUOTE(IF(JSON_EXTRACT(pt1.form,'$.eventform_type') = 'basic',JSON_EXTRACT(pt1.form,'$.event_level'),JSON_EXTRACT(pt1.form,'$.level2')))  as '事件级别',
 			 
 CASE
@@ -30,6 +29,10 @@ CASE
 	"故障处理" 
 	WHEN 'infomation' THEN
 	"信息安全" 
+	WHEN 'infrastructure' THEN
+	'基础设施'
+	WHEN 'physical' THEN
+  '物理安全'
 END '一级分类',
 
 CASE
@@ -40,16 +43,22 @@ CASE
 			"系统软件故障" 
 END '二级分类',
 CASE
-			JSON_UNQUOTE(IF(JSON_EXTRACT(pt1.form,'$.eventform_type') = 'basic',JSON_EXTRACT(pt1.form,'$.equipment_malfunction_type'),JSON_EXTRACT(pt1.form,'$.equipment_malfunction2_type')))
+			JSON_UNQUOTE(IF(JSON_EXTRACT(pt1.form,'$.eventform_type') = 'basic',IF(JSON_EXTRACT(pt1.form,'$.malfunction') = 'equipment',JSON_EXTRACT(pt1.form,'$.equipment_malfunction_type'),JSON_EXTRACT(pt1.form,'$.software_malfunction_type')),IF(JSON_EXTRACT(pt1.form,'$.malfunction2') = 'equipment',JSON_EXTRACT(pt1.form,'$.equipment_malfunction2_type'),JSON_EXTRACT(pt1.form,'$.software_malfunction2_type'))))
 			WHEN 'micro_module' THEN
 			"X86 设备故障" 
 			WHEN 'sde' THEN
 			"存储设备故障" 
-			WHEN 'ecm' THEN 
+			WHEN 'ecm' THEN
 			"网络设备故障"
 			WHEN 'hvac' THEN 
 			"安全设备故障"
-END '三级分类',
+			WHEN 'cctv' THEN
+					IF(JSON_EXTRACT(pt1.form,'$.eventform_type') = 'basic',"安全软件故障","视频监控系统")
+			WHEN '微模块设备故障' THEN
+			"微模块设备故障"
+			WHEN 'su' THEN
+			    IF(JSON_EXTRACT(pt1.form,'$.eventform_type') = 'nobasic',"云平台软件故障","动环监控系统故障")
+ END '三级分类',
        
 gr.created_at AS '发生时间',
 pt1.assign_time AS '响应时间',
@@ -90,9 +99,9 @@ from generic_request gr
                                              on t1.target_id = t2.id and t2.type = 'PROBLEM_SERVICE') as f
                     group by f.source_id) as grl3
                    on gr.id = grl3.source_id
-where type ='INCIDENT_SERVICE'
+where gr.type ='INCIDENT_SERVICE' and gr.state ='FINISHED'
 #if(${created_at} != '') 
     AND gr.created_at >= STR_TO_DATE(CONCAT('${created_at}', '-01'),'%Y-%m-%d')
       AND gr.created_at <= STR_TO_DATE(CONCAT('${created_at}', '-31'),'%Y-%m-%d')
  #end
-AND gr.applicant NOT LIKE 'System administrator';
+ AND gr.applicant NOT LIKE 'System administrator';

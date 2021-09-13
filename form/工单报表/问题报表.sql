@@ -27,13 +27,15 @@ CASE JSON_UNQUOTE(JSON_EXTRACT( gr.process_form, '$.trouble_classification' ))
 	WHEN 'info' THEN
 	"信息安全隐患" 
 END '一级分类',
-       JSON_UNQUOTE(JSON_EXTRACT(gr.process_form,'$.physical_trouble')) as '二级分类',
+IF(JSON_EXTRACT(gr.process_form,'$.trouble_classification')='basic',JSON_EXTRACT(gr.process_form,'$.basic_trouble'),IF(JSON_EXTRACT(gr.process_form,'$.trouble_classification')='nobasic',JSON_EXTRACT(gr.process_form,'$.nobasic_trouble'),IF(JSON_EXTRACT(gr.process_form,'$.trouble_classification')='physical',JSON_EXTRACT(gr.process_form,'$.physical_trouble'),JSON_EXTRACT(gr.process_form,'$.info_trouble')))) as '二级分类',
        gr.created_at as '申请时间',
-       JSON_EXTRACT(gr.process_form,'$.want_end_time') as '预期完成时间',
-       pt1.assign_time as '调研开始时间',
-       gr.complete_at as '调研完成时间',
-       IF(pt1.assign_time, TIMESTAMPDIFF(HOUR, gr.created_at,pt1.assign_time), '-') as '预期时间(小时)',
-       IF(pt1.complete_at, TIMESTAMPDIFF(HOUR, gr.created_at,gr.complete_at), '-') as '调研时间(小时)',
+       FROM_UNIXTIME(JSON_EXTRACT(gr.process_form,'$.want_start_time')  / 1000) as '预期开始时间',
+	   FROM_UNIXTIME(JSON_EXTRACT(gr.process_form,'$.want_end_time')  / 1000) as '预期完成时间',
+	   FROM_UNIXTIME(JSON_EXTRACT(pt1.form,'$.diaoyan_start_time')  / 1000) as '调研开始时间',
+	   FROM_UNIXTIME(JSON_EXTRACT(pt1.form,'$.diaoyan_end_time')  / 1000) as '调研结束时间',
+	   TIMESTAMPDIFF(HOUR, FROM_UNIXTIME(JSON_EXTRACT(gr.process_form,'$.want_start_time')  / 1000),FROM_UNIXTIME(JSON_EXTRACT(gr.process_form,'$.want_end_time')  / 1000)) as '预期时间(小时)',
+	   TIMESTAMPDIFF(HOUR, FROM_UNIXTIME(JSON_EXTRACT(pt1.form,'$.diaoyan_start_time')  / 1000), FROM_UNIXTIME(JSON_EXTRACT(pt1.form,'$.diaoyan_end_time')  / 1000)) as '调研时间(小时)',
+      
        JSON_EXTRACT(pt1.form, '$.ola') as '是否满足SLA要求',
        gr.description as '备注'
 from generic_request gr
@@ -45,9 +47,9 @@ from generic_request gr
                                        on a.request_id = b.request_id
                     where a.created_at = b.create_at) as pt1
                    on gr.id = pt1.request_id and pt1.process_task_name = '服务处理'
-where type ='PROBLEM_SERVICE'
+where type ='PROBLEM_SERVICE' 
 #if(${created_at} != '') 
     AND gr.created_at >= STR_TO_DATE(CONCAT('${created_at}', '-01'),'%Y-%m-%d')
-      AND gr.created_at <= STR_TO_DATE(CONCAT('${created_at}', '-31'),'%Y-%m-%d')
+		and gr.created_at <= STR_TO_DATE(CONCAT('${created_at}', '-31'),'%Y-%m-%d')
  #end
-AND gr.applicant NOT LIKE 'System administrator';
+AND gr.applicant NOT LIKE 'System administrator' AND gr.applicant NOT LIKE 'lxp' AND gr.applicant NOT LIKE 'litong' ;
