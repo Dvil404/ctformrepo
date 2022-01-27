@@ -1,4 +1,8 @@
 #!/bin/bash
+#参数定义：
+# ${hostname} 云主机hostname
+# ${IP} 自动读取的192网段的IP，作为部署json的内容
+# ${URL} 部署包URL
 IP=`ip addr | grep inet | awk '{ print $2; }' | sed 's/\/.*$//' | grep 192`
 hostname=`hostname`
 
